@@ -7,15 +7,18 @@ function createWindow () {
     height: 768,
     minWidth: 1024,
     minHeight: 600,
-    autoHideMenuBar: true, // إخفاء الشريط العلوي لتبدو كبرنامج احترافي
+    autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
     }
   });
 
-  // تحميل واجهة الـ HTML
-  mainWindow.loadFile('index.html');
+  // الإصلاح الجذري: استخدام المسار المطلق بدلاً من المسار النسبي
+  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  
+  // ملاحظة: إذا أردت فتح شاشة فحص الأخطاء لمعرفة أي مشكلة مخفية، يمكنك تفعيل السطر التالي:
+  // mainWindow.webContents.openDevTools();
 }
 
 app.whenReady().then(() => {
