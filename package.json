@@ -1,0 +1,22 @@
+{
+  "name": "pro-dashboard-app",
+  "version": "1.0.0",
+  "description": "Professional Desktop App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.pro.dashboard",
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    }
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^29.0.0",
+    "electron-builder": "^24.12.0"
+  }
+}
