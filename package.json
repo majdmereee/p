@@ -1,21 +1,18 @@
 {
-  "name": "restaurant-dashboard-app",
+  "name": "restaurant-pro-manager",
   "version": "1.0.0",
-  "description": "نظام احترافي لإدارة موظفي المطاعم",
+  "description": "النظام الإداري والمالي المتقدم للمطاعم",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --win --publish never"
   },
   "build": {
-    "appId": "com.restaurant.dashboard",
-    "productName": "نظام إدارة المطعم",
+    "appId": "com.restaurant.pro",
     "win": {
-      "target": "nsis",
-      "icon": "build/icon.ico"
+      "target": "nsis"
     }
   },
-  "dependencies": {},
   "devDependencies": {
     "electron": "^29.0.0",
     "electron-builder": "^24.12.0"
