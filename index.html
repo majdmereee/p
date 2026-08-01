@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>النظام الإداري المتقدم</title>
+    <title>نظام إدارة المطعم الاحترافي</title>
     <!-- استدعاء خطوط وأيقونات خارجية -->
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
@@ -13,11 +13,14 @@
         :root {
             --bg-dark: #0f172a;
             --panel-bg: #1e293b;
-            --primary: #3b82f6;
+            --primary: #f59e0b; /* لون برتقالي يناسب المطاعم */
+            --primary-hover: #d97706;
             --success: #10b981;
             --danger: #ef4444;
+            --warning: #f59e0b;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
+            --border-color: #334155;
         }
         * {
             margin: 0; padding: 0; box-sizing: border-box;
@@ -34,13 +37,13 @@
         .sidebar {
             width: 260px;
             background-color: var(--panel-bg);
-            border-left: 1px solid #334155;
+            border-left: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             padding: 20px;
         }
         .logo {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 900;
             color: var(--primary);
             margin-bottom: 40px;
@@ -64,12 +67,18 @@
             background-color: var(--primary);
             color: #fff;
         }
+        
         /* Main Content Styles */
         .main-content {
             flex: 1;
             padding: 30px;
             overflow-y: auto;
+            position: relative;
         }
+        .section-page { display: none; }
+        .section-page.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
         .header {
             display: flex;
             justify-content: space-between;
@@ -78,7 +87,7 @@
         }
         .search-bar input {
             background: var(--panel-bg);
-            border: 1px solid #334155;
+            border: 1px solid var(--border-color);
             color: #fff;
             padding: 12px 20px;
             border-radius: 8px;
@@ -96,8 +105,14 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            transition: 0.2s;
         }
+        .btn:hover { background: var(--primary-hover); }
         .btn-success { background: var(--success); }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover { background: #b91c1c; }
+
         /* Cards */
         .cards-grid {
             display: grid;
@@ -109,7 +124,7 @@
             background: var(--panel-bg);
             padding: 25px;
             border-radius: 15px;
-            border: 1px solid #334155;
+            border: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -119,10 +134,11 @@
         .card .icon {
             font-size: 35px;
             color: var(--primary);
-            background: rgba(59, 130, 246, 0.1);
+            background: rgba(245, 158, 11, 0.1);
             padding: 15px;
             border-radius: 50%;
         }
+
         /* Charts & Tables */
         .dashboard-grid {
             display: grid;
@@ -133,7 +149,7 @@
             background: var(--panel-bg);
             padding: 25px;
             border-radius: 15px;
-            border: 1px solid #334155;
+            border: 1px solid var(--border-color);
         }
         table {
             width: 100%;
@@ -143,7 +159,7 @@
         th, td {
             padding: 15px;
             text-align: right;
-            border-bottom: 1px solid #334155;
+            border-bottom: 1px solid var(--border-color);
         }
         th { color: var(--text-muted); font-weight: normal; }
         .badge {
@@ -153,129 +169,374 @@
             font-weight: bold;
         }
         .badge-active { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .badge-leave { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none; align-items: center; justify-content: center;
+            z-index: 1000;
+        }
+        .modal {
+            background: var(--panel-bg); padding: 30px;
+            border-radius: 15px; width: 500px;
+            border: 1px solid var(--border-color);
+        }
+        .modal h2 { margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: var(--text-muted); }
+        .form-group input, .form-group select {
+            width: 100%; padding: 10px; border-radius: 8px;
+            background: var(--bg-dark); color: #fff;
+            border: 1px solid var(--border-color); outline: none;
+        }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        .action-btns button { padding: 5px 10px; border-radius: 5px; border: none; cursor: pointer; margin-right: 5px; color: #fff; }
+        .btn-edit { background: var(--primary); }
+        .btn-del { background: var(--danger); }
     </style>
 </head>
 <body>
 
     <!-- القائمة الجانبية -->
     <div class="sidebar">
-        <div class="logo"><i class="fa-solid fa-bolt"></i> نظام الإدارة</div>
-        <div class="nav-item active"><i class="fa-solid fa-chart-pie"></i> لوحة القيادة</div>
-        <div class="nav-item"><i class="fa-solid fa-users"></i> الموظفين</div>
-        <div class="nav-item"><i class="fa-solid fa-wallet"></i> المالية والرواتب</div>
-        <div class="nav-item"><i class="fa-solid fa-file-excel"></i> التقارير</div>
+        <div class="logo"><i class="fa-solid fa-utensils"></i> مطعمي برو</div>
+        <div class="nav-item active" data-target="dashboard-section"><i class="fa-solid fa-chart-pie"></i> لوحة القيادة</div>
+        <div class="nav-item" data-target="employees-section"><i class="fa-solid fa-users"></i> الموظفين</div>
+        <div class="nav-item" data-target="salaries-section"><i class="fa-solid fa-wallet"></i> المالية والرواتب</div>
         <div class="nav-item" style="margin-top: auto;"><i class="fa-solid fa-gear"></i> الإعدادات</div>
     </div>
 
     <!-- المحتوى الرئيسي -->
     <div class="main-content">
-        <!-- الرأس -->
-        <div class="header">
-            <div>
-                <h1 style="margin-bottom: 5px;">مرحباً بك مجدداً 👋</h1>
-                <p style="color: var(--text-muted);">إليك ملخص العمليات والإحصائيات لهذا اليوم</p>
-            </div>
-            <div style="display: flex; gap: 15px;">
-                <div class="search-bar">
-                    <input type="text" placeholder="ابحث في النظام...">
+        
+        <!-- ================= قسم لوحة القيادة ================= -->
+        <div id="dashboard-section" class="section-page active">
+            <div class="header">
+                <div>
+                    <h1 style="margin-bottom: 5px;">مرحباً بك يا مدير 👋</h1>
+                    <p style="color: var(--text-muted);">إليك ملخص عمليات المطعم والموظفين اليوم</p>
                 </div>
-                <button class="btn btn-success"><i class="fa-solid fa-plus"></i> إضافة جديد</button>
+            </div>
+
+            <div class="cards-grid">
+                <div class="card">
+                    <div>
+                        <h3>إجمالي الموظفين</h3>
+                        <h2 id="total-employees">0</h2>
+                    </div>
+                    <div class="icon"><i class="fa-solid fa-users-gear"></i></div>
+                </div>
+                <div class="card">
+                    <div>
+                        <h3>موظفي الوردية الصباحية</h3>
+                        <h2 id="morning-shift">0</h2>
+                    </div>
+                    <div class="icon" style="color: var(--success); background: rgba(16,185,129,0.1);"><i class="fa-solid fa-sun"></i></div>
+                </div>
+                <div class="card">
+                    <div>
+                        <h3>موظفي الوردية المسائية</h3>
+                        <h2 id="night-shift">0</h2>
+                    </div>
+                    <div class="icon" style="color: #8b5cf6; background: rgba(139, 92, 246, 0.1);"><i class="fa-solid fa-moon"></i></div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="panel">
+                    <h2 style="margin-bottom: 15px;">آخر الموظفين المضافين</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الاسم</th>
+                                <th>المنصب</th>
+                                <th>الوردية</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-employees-table">
+                            <!-- سيتم التعبئة ديناميكياً -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="panel">
+                    <h2 style="margin-bottom: 15px;">توزيع المناصب</h2>
+                    <canvas id="myChart" width="400" height="300"></canvas>
+                </div>
             </div>
         </div>
 
-        <!-- البطاقات -->
-        <div class="cards-grid">
-            <div class="card">
+        <!-- ================= قسم الموظفين ================= -->
+        <div id="employees-section" class="section-page">
+            <div class="header">
                 <div>
-                    <h3>إجمالي العمليات</h3>
-                    <h2>1,284</h2>
+                    <h1 style="margin-bottom: 5px;">إدارة الموظفين</h1>
                 </div>
-                <div class="icon"><i class="fa-solid fa-chart-line"></i></div>
-            </div>
-            <div class="card">
-                <div>
-                    <h3>النشطين حالياً</h3>
-                    <h2>342</h2>
+                <div style="display: flex; gap: 15px;">
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="ابحث عن موظف..." onkeyup="renderEmployeesTable()">
+                    </div>
+                    <button class="btn btn-success" onclick="openModal()"><i class="fa-solid fa-plus"></i> إضافة موظف</button>
                 </div>
-                <div class="icon" style="color: var(--success); background: rgba(16,185,129,0.1);"><i class="fa-solid fa-user-check"></i></div>
             </div>
-            <div class="card">
-                <div>
-                    <h3>تنبيهات النظام</h3>
-                    <h2>12</h2>
-                </div>
-                <div class="icon" style="color: var(--danger); background: rgba(239,68,68,0.1);"><i class="fa-solid fa-bell"></i></div>
-            </div>
-        </div>
-
-        <!-- الجداول والرسوم البيانية -->
-        <div class="dashboard-grid">
-            <!-- الجدول -->
             <div class="panel">
-                <h2 style="margin-bottom: 15px;">آخر السجلات النشطة</h2>
                 <table>
                     <thead>
                         <tr>
                             <th>الرقم</th>
                             <th>الاسم</th>
-                            <th>التاريخ</th>
+                            <th>المنصب</th>
+                            <th>الراتب ($)</th>
+                            <th>الوردية</th>
                             <th>الحالة</th>
-                            <th>إجراء</th>
+                            <th>إجراءات</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>#1001</td>
-                            <td>أحمد محمد</td>
-                            <td>2026-07-30</td>
-                            <td><span class="badge badge-active">مكتمل</span></td>
-                            <td><button class="btn" style="padding: 5px 15px; font-size: 12px;">عرض</button></td>
-                        </tr>
-                        <tr>
-                            <td>#1002</td>
-                            <td>سارة خالد</td>
-                            <td>2026-07-30</td>
-                            <td><span class="badge badge-active">مكتمل</span></td>
-                            <td><button class="btn" style="padding: 5px 15px; font-size: 12px;">عرض</button></td>
-                        </tr>
+                    <tbody id="full-employees-table">
+                        <!-- سيتم التعبئة ديناميكياً -->
                     </tbody>
                 </table>
             </div>
+        </div>
 
-            <!-- الرسم البياني -->
+        <!-- ================= قسم المالية ================= -->
+        <div id="salaries-section" class="section-page">
+            <div class="header">
+                <h1 style="margin-bottom: 5px;">المالية والرواتب</h1>
+            </div>
             <div class="panel">
-                <h2 style="margin-bottom: 15px;">معدل الأداء</h2>
-                <canvas id="myChart" width="400" height="300"></canvas>
+                <h2 style="margin-bottom: 15px; color: var(--success);">إجمالي الرواتب المطلوبة شهرياً: <span id="total-salaries">0</span>$</h2>
+                <p style="color: var(--text-muted);">هذه الشاشة مخصصة لحسابات المطعم (قيد التطوير لمزيد من الميزات).</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- نافذة إضافة/تعديل موظف (Modal) -->
+    <div class="modal-overlay" id="employeeModal">
+        <div class="modal">
+            <h2 id="modalTitle">إضافة موظف جديد</h2>
+            <input type="hidden" id="empId">
+            <div class="form-group">
+                <label>اسم الموظف</label>
+                <input type="text" id="empName" placeholder="الاسم الكامل">
+            </div>
+            <div class="form-group">
+                <label>المنصب (الدور)</label>
+                <select id="empRole">
+                    <option value="شيف">شيف</option>
+                    <option value="مساعد شيف">مساعد شيف</option>
+                    <option value="نادل">نادل</option>
+                    <option value="كاشير">كاشير</option>
+                    <option value="مدير صالة">مدير صالة</option>
+                    <option value="عامل نظافة">عامل نظافة</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>الراتب ($)</label>
+                <input type="number" id="empSalary" placeholder="مثال: 500">
+            </div>
+            <div class="form-group">
+                <label>الوردية</label>
+                <select id="empShift">
+                    <option value="صباحي">صباحي</option>
+                    <option value="مسائي">مسائي</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>الحالة</label>
+                <select id="empStatus">
+                    <option value="نشط">نشط (على رأس العمل)</option>
+                    <option value="إجازة">في إجازة</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-danger" onclick="closeModal()">إلغاء</button>
+                <button class="btn btn-success" onclick="saveEmployee()">حفظ البيانات</button>
             </div>
         </div>
     </div>
 
-    <!-- كود الجافاسكربت للرسوم البيانية والتفاعل -->
+    <!-- 스크립트 / JS -->
     <script>
-        const ctx = document.getElementById('myChart').getContext('2d');
-        const myChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'],
-                datasets: [{
-                    label: 'النشاط',
-                    data: [12, 19, 15, 25, 22, 30],
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { 
-                    y: { grid: { color: '#334155' } },
-                    x: { grid: { display: false } }
-                }
-            }
+        const { ipcRenderer } = require('electron');
+        
+        let employees = [];
+        let myChartInstance = null;
+
+        // تهيئة النظام عند التحميل
+        document.addEventListener('DOMContentLoaded', async () => {
+            employees = await ipcRenderer.invoke('get-employees');
+            updateUI();
         });
+
+        // نظام التبويبات (Navigation)
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                if(!this.dataset.target) return;
+                // إزالة النشط من الجميع
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                document.querySelectorAll('.section-page').forEach(sec => sec.classList.remove('active'));
+                
+                // تفعيل المطلوب
+                this.classList.add('active');
+                document.getElementById(this.dataset.target).classList.add('active');
+            });
+        });
+
+        // تحديث جميع واجهات النظام
+        function updateUI() {
+            renderDashboardCards();
+            renderEmployeesTable();
+            renderChart();
+        }
+
+        function renderDashboardCards() {
+            document.getElementById('total-employees').innerText = employees.length;
+            document.getElementById('morning-shift').innerText = employees.filter(e => e.shift === 'صباحي').length;
+            document.getElementById('night-shift').innerText = employees.filter(e => e.shift === 'مسائي').length;
+            
+            let totalSalaries = employees.reduce((sum, emp) => sum + Number(emp.salary || 0), 0);
+            document.getElementById('total-salaries').innerText = totalSalaries;
+
+            // تحديث جدول آخر الموظفين (أول 5 فقط)
+            const tbodyRecent = document.getElementById('recent-employees-table');
+            tbodyRecent.innerHTML = '';
+            employees.slice(-5).reverse().forEach(emp => {
+                let badgeClass = emp.status === 'نشط' ? 'badge-active' : 'badge-leave';
+                tbodyRecent.innerHTML += `
+                    <tr>
+                        <td>${emp.name}</td>
+                        <td>${emp.role}</td>
+                        <td>${emp.shift}</td>
+                        <td><span class="badge ${badgeClass}">${emp.status}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderEmployeesTable() {
+            const tbody = document.getElementById('full-employees-table');
+            const searchTxt = document.getElementById('searchInput').value.toLowerCase();
+            tbody.innerHTML = '';
+            
+            employees.forEach((emp, index) => {
+                if(emp.name.toLowerCase().includes(searchTxt) || emp.role.includes(searchTxt)) {
+                    let badgeClass = emp.status === 'نشط' ? 'badge-active' : 'badge-leave';
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>#${emp.id}</td>
+                            <td>${emp.name}</td>
+                            <td>${emp.role}</td>
+                            <td>${emp.salary}$</td>
+                            <td>${emp.shift}</td>
+                            <td><span class="badge ${badgeClass}">${emp.status}</span></td>
+                            <td class="action-btns">
+                                <button class="btn-edit" onclick="editEmployee(${emp.id})"><i class="fa-solid fa-pen"></i></button>
+                                <button class="btn-del" onclick="deleteEmployee(${emp.id})"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                }
+            });
+        }
+
+        // === منطق النوافذ المنبثقة (Modal) والـ CRUD ===
+        function openModal() {
+            document.getElementById('empId').value = '';
+            document.getElementById('empName').value = '';
+            document.getElementById('empSalary').value = '';
+            document.getElementById('modalTitle').innerText = 'إضافة موظف جديد';
+            document.getElementById('employeeModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('employeeModal').style.display = 'none';
+        }
+
+        async function saveEmployee() {
+            const id = document.getElementById('empId').value;
+            const name = document.getElementById('empName').value;
+            const role = document.getElementById('empRole').value;
+            const salary = document.getElementById('empSalary').value;
+            const shift = document.getElementById('empShift').value;
+            const status = document.getElementById('empStatus').value;
+
+            if(!name || !salary) { alert('يرجى تعبئة كافة الحقول!'); return; }
+
+            if(id) {
+                // تعديل
+                let index = employees.findIndex(e => e.id == id);
+                if(index > -1) {
+                    employees[index] = { id: Number(id), name, role, salary, shift, status };
+                }
+            } else {
+                // إضافة جديد
+                const newId = employees.length > 0 ? Math.max(...employees.map(e => e.id)) + 1 : 1000;
+                employees.push({ id: newId, name, role, salary, shift, status });
+            }
+
+            // حفظ في الملف عبر الـ IPC
+            await ipcRenderer.invoke('save-employees', employees);
+            closeModal();
+            updateUI();
+        }
+
+        function editEmployee(id) {
+            const emp = employees.find(e => e.id == id);
+            if(emp) {
+                document.getElementById('empId').value = emp.id;
+                document.getElementById('empName').value = emp.name;
+                document.getElementById('empRole').value = emp.role;
+                document.getElementById('empSalary').value = emp.salary;
+                document.getElementById('empShift').value = emp.shift;
+                document.getElementById('empStatus').value = emp.status;
+                document.getElementById('modalTitle').innerText = 'تعديل بيانات الموظف';
+                document.getElementById('employeeModal').style.display = 'flex';
+            }
+        }
+
+        async function deleteEmployee(id) {
+            if(confirm('هل أنت متأكد من حذف هذا الموظف؟')) {
+                employees = employees.filter(e => e.id != id);
+                await ipcRenderer.invoke('save-employees', employees);
+                updateUI();
+            }
+        }
+
+        // رسم بياني (Chart.js)
+        function renderChart() {
+            const roles = {};
+            employees.forEach(emp => { roles[emp.role] = (roles[emp.role] || 0) + 1; });
+            
+            const labels = Object.keys(roles);
+            const data = Object.values(roles);
+
+            const ctx = document.getElementById('myChart').getContext('2d');
+            
+            if(myChartInstance) myChartInstance.destroy(); // تدمير القديم قبل رسم الجديد
+
+            myChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.length ? labels : ['لا يوجد بيانات'],
+                    datasets: [{
+                        data: data.length ? data : [1],
+                        backgroundColor: ['#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ef4444'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Tajawal' } } }
+                    }
+                }
+            });
+        }
     </script>
 </body>
 </html>
