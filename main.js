@@ -2,20 +2,27 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-// تحديد مسار حفظ قاعدة البيانات (في مجلد بيانات التطبيق)
-const dataFilePath = path.join(app.getPath('userData'), 'restaurant_employees.json');
+// مسار قاعدة البيانات الشاملة
+const dataFilePath = path.join(app.getPath('userData'), 'restaurant_db_pro.json');
 
-// دالة تهيئة ملف البيانات إذا لم يكن موجوداً
+// الهيكل الأساسي لقاعدة البيانات
+const defaultDB = {
+  employees: [],
+  transactions: [], // السلف، الخصومات، المكافآت
+  attendance: [],   // سجلات الحضور والساعات
+  settings: { currency: '$', defaultShift: 'صباحي' }
+};
+
 function initDataFile() {
   if (!fs.existsSync(dataFilePath)) {
-    fs.writeFileSync(dataFilePath, JSON.stringify([]));
+    fs.writeFileSync(dataFilePath, JSON.stringify(defaultDB, null, 2));
   }
 }
 
 function createWindow () {
   const mainWindow = new BrowserWindow({
-    width: 1366,
-    height: 768,
+    width: 1400,
+    height: 800,
     minWidth: 1024,
     minHeight: 700,
     autoHideMenuBar: true,
@@ -26,7 +33,7 @@ function createWindow () {
   });
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
-  // mainWindow.webContents.openDevTools(); // افتح هذه لفحص الأخطاء أثناء التطوير
+  // mainWindow.webContents.openDevTools(); 
 }
 
 app.whenReady().then(() => {
@@ -42,22 +49,20 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
-// === إعدادات الـ IPC للتواصل بين الواجهة والنظام (CRUD Operations) ===
-
-// قراءة البيانات
-ipcMain.handle('get-employees', async () => {
+// قراءة كل البيانات
+ipcMain.handle('get-db', async () => {
   try {
     const data = fs.readFileSync(dataFilePath, 'utf8');
     return JSON.parse(data);
   } catch (error) {
-    return [];
+    return defaultDB;
   }
 });
 
-// حفظ البيانات (إضافة/تعديل/حذف)
-ipcMain.handle('save-employees', async (event, employeesData) => {
+// حفظ قاعدة البيانات بالكامل
+ipcMain.handle('save-db', async (event, dbData) => {
   try {
-    fs.writeFileSync(dataFilePath, JSON.stringify(employeesData, null, 2));
+    fs.writeFileSync(dataFilePath, JSON.stringify(dbData, null, 2));
     return { success: true };
   } catch (error) {
     return { success: false, error: error.message };
