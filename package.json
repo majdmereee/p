@@ -1,14 +1,15 @@
 {
-  "name": "pro-dashboard-app",
+  "name": "restaurant-dashboard-app",
   "version": "1.0.0",
-  "description": "Professional Desktop App",
+  "description": "نظام احترافي لإدارة موظفي المطاعم",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --win --publish never"
   },
   "build": {
-    "appId": "com.pro.dashboard",
+    "appId": "com.restaurant.dashboard",
+    "productName": "نظام إدارة المطعم",
     "win": {
       "target": "nsis",
       "icon": "build/icon.ico"
