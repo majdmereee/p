@@ -1,967 +1,1062 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مطعمي برو - Gamified Premium</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg-dark: #070b14;
-            --panel-bg: #111827;
-            --primary: #8b5cf6;
-            --primary-hover: #7c3aed;
-            --secondary: #0ea5e9;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: #1f2937;
-            --glow-primary: 0 0 15px rgba(139, 92, 246, 0.5);
-            --glow-success: 0 0 15px rgba(16, 185, 129, 0.4);
-            --glow-danger: 0 0 15px rgba(239, 68, 68, 0.4);
-        }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Tajawal', sans-serif;
-        }
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-dark);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary);
-        }
-        .sidebar {
-            width: 280px;
-            background: linear-gradient(180deg, var(--panel-bg) 0%, var(--bg-dark) 100%);
-            border-left: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            padding: 25px 20px;
-            z-index: 50;
-            box-shadow: 5px 0 25px rgba(0,0,0,0.8);
-        }
-        .logo {
-            font-size: 28px;
-            font-weight: 900;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 40px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            letter-spacing: 1px;
-        }
-        .nav-item {
-            padding: 16px;
-            margin-bottom: 12px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            color: var(--text-muted);
-            font-weight: 700;
-            font-size: 15px;
-            border: 1px solid transparent;
-        }
-        .nav-item:hover {
-            background: rgba(139, 92, 246, 0.1);
-            color: var(--text-main);
-            border-color: rgba(139, 92, 246, 0.3);
-            transform: translateX(-5px);
-        }
-        .nav-item.active {
-            background: var(--primary);
-            color: #fff;
-            box-shadow: var(--glow-primary);
-            border-color: var(--primary-hover);
-            transform: translateX(-5px);
-        }
-        .secret-tab {
-            color: #475569;
-        }
-        .secret-tab:hover {
-            color: var(--warning);
-            background: rgba(245, 158, 11, 0.1);
-            border-color: rgba(245, 158, 11, 0.3);
-            box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
-        }
-        .main-content {
-            flex: 1;
-            padding: 40px;
-            overflow-y: auto;
-            position: relative;
-            scroll-behavior: smooth;
-        }
-        .section-page {
-            display: none;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.4s ease;
-        }
-        .section-page.active {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-            background: var(--panel-bg);
-            padding: 20px 30px;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .header h1 {
-            font-size: 24px;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .btn {
-            background: var(--border-color);
-            color: #fff;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 900;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), #6d28d9); box-shadow: var(--glow-primary); }
-        .btn-success { background: linear-gradient(135deg, var(--success), #059669); box-shadow: var(--glow-success); }
-        .btn-danger { background: linear-gradient(135deg, var(--danger), #be123c); box-shadow: var(--glow-danger); }
-        .btn-warning { background: linear-gradient(135deg, var(--warning), #b45309); box-shadow: 0 0 15px rgba(245, 158, 11, 0.4); }
-        .btn-info { background: linear-gradient(135deg, var(--secondary), #0284c7); box-shadow: 0 0 15px rgba(14, 165, 233, 0.4); }
-        .btn:hover { transform: translateY(-3px) scale(1.02); filter: brightness(1.15); }
-        .btn:active { transform: translateY(1px); }
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-        .card {
-            background: var(--panel-bg);
-            padding: 30px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            transition: transform 0.3s ease;
-        }
-        .card:hover { transform: translateY(-5px); }
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 5px;
-            height: 100%;
-            background: var(--primary);
-        }
-        .card.emerald::before { background: var(--success); }
-        .card.rose::before { background: var(--danger); }
-        .card.amber::before { background: var(--warning); }
-        .card.sky::before { background: var(--secondary); }
-        .card h3 {
-            color: var(--text-muted);
-            font-size: 14px;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 700;
-        }
-        .card h2 { font-size: 32px; font-weight: 900; color: #fff; }
-        .card .icon {
-            font-size: 38px;
-            padding: 18px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .panel {
-            background: var(--panel-bg);
-            padding: 35px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 30px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
-        }
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 12px;
-            margin-top: 10px;
-        }
-        th, td {
-            padding: 18px 15px;
-            text-align: right;
-            background: rgba(17, 24, 39, 0.6);
-        }
-        th {
-            color: var(--secondary);
-            font-weight: 900;
-            background: transparent;
-            border-bottom: 2px solid var(--border-color);
-            text-transform: uppercase;
-            font-size: 14px;
-            letter-spacing: 0.5px;
-        }
-        td { font-size: 15px; font-weight: 500; color: #e2e8f0; }
-        td:first-child { border-radius: 0 12px 12px 0; font-weight: 900; color: #fff; }
-        td:last-child { border-radius: 12px 0 0 12px; }
-        tr { transition: transform 0.2s; }
-        tr:hover td { background: rgba(31, 41, 55, 0.9); }
-        .progress-wrapper {
-            width: 100%;
-            background: #0f172a;
-            border-radius: 10px;
-            height: 12px;
-            overflow: hidden;
-            margin-top: 8px;
-            border: 1px solid var(--border-color);
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-        }
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--secondary), var(--primary));
-            border-radius: 10px;
-            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: var(--glow-primary);
-        }
-        .badge {
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 900;
-            display: inline-block;
-        }
-        .badge-pos { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
-        .badge-neg { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
-        .badge-neu { background: rgba(14, 165, 233, 0.15); color: var(--secondary); border: 1px solid rgba(14, 165, 233, 0.3); }
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(8px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .modal {
-            background: var(--panel-bg);
-            padding: 40px;
-            border-radius: 24px;
-            width: 600px;
-            border: 1px solid var(--border-color);
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.7), inset 0 1px 1px rgba(255,255,255,0.05);
-            transform: scale(0.95);
-            transition: transform 0.3s ease;
-            position: relative;
-            z-index: 10000;
-        }
-        .modal-overlay.active { opacity: 1; }
-        .modal-overlay.active .modal { transform: scale(1); }
-        .form-group { margin-bottom: 24px; position: relative; }
-        .form-group label {
-            display: block;
-            margin-bottom: 10px;
-            color: var(--secondary);
-            font-weight: 900;
-            font-size: 14px;
-            letter-spacing: 0.5px;
-        }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 16px 20px;
-            border-radius: 14px;
-            background: #0f172a;
-            color: #ffffff;
-            border: 2px solid var(--border-color);
-            transition: all 0.3s ease;
-            font-size: 16px;
-            font-weight: 700;
-            pointer-events: auto;
-            appearance: none;
-            -webkit-appearance: none;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .form-group input:focus, .form-group select:focus {
-            border-color: var(--primary);
-            box-shadow: var(--glow-primary), inset 0 2px 4px rgba(0,0,0,0.2);
-            outline: none;
-            background: #151e32;
-        }
-        .form-group select {
-            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%238b5cf6%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-            background-repeat: no-repeat, repeat;
-            background-position: left 20px top 50%, 0 0;
-            background-size: .65em auto, 100%;
-        }
-        .form-group input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-            cursor: pointer;
-        }
-        .modal-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: flex-end;
-            margin-top: 40px;
-            padding-top: 25px;
-            border-top: 1px solid var(--border-color);
-        }
-        .export-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            background: #0f172a;
-            padding: 25px;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 25px;
-        }
-        .custom-checkbox {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            padding: 12px;
-            border-radius: 10px;
-            transition: all 0.2s;
-            border: 1px solid transparent;
-        }
-        .custom-checkbox:hover {
-            background: rgba(255,255,255,0.02);
-            border-color: var(--border-color);
-        }
-        .custom-checkbox input {
-            appearance: none;
-            width: 22px;
-            height: 22px;
-            border: 2px solid var(--text-muted);
-            border-radius: 6px;
-            background: transparent;
-            cursor: pointer;
-            position: relative;
-            transition: all 0.2s;
-        }
-        .custom-checkbox input:checked {
-            background: var(--primary);
-            border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
-        }
-        .custom-checkbox input:checked::after {
-            content: 'âœ”';
-            position: absolute;
-            color: white;
-            font-size: 14px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        .custom-checkbox span {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-        #report-output {
-            width: 100%;
-            height: 350px;
-            margin-top: 25px;
-            background: #090e17;
-            color: var(--success);
-            border: 2px solid var(--border-color);
-            padding: 20px;
-            border-radius: 16px;
-            font-size: 15px;
-            line-height: 1.8;
-            resize: none;
-            display: none;
-            box-shadow: inset 0 5px 15px rgba(0,0,0,0.5);
-            font-weight: 700;
-        }
-        .box-detail-header {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            padding: 30px;
-            border-radius: 20px;
-            border: 1px solid var(--primary);
-            margin-bottom: 30px;
-            box-shadow: var(--glow-primary);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مطعمي برو - Ultimate Enterprise Edition</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+--bg-color-main: #030712;
+--bg-color-panel: #0f172a;
+--bg-color-card: #1e293b;
+--color-primary: #4f46e5;
+--color-primary-hover: #4338ca;
+--color-primary-glow: rgba(79, 70, 229, 0.4);
+--color-secondary: #0ea5e9;
+--color-secondary-hover: #0284c7;
+--color-success: #10b981;
+--color-success-hover: #059669;
+--color-danger: #e11d48;
+--color-danger-hover: #be123c;
+--color-warning: #f59e0b;
+--color-warning-hover: #d97706;
+--text-bright: #f8fafc;
+--text-muted: #94a3b8;
+--border-light: #334155;
+--border-dark: #1e293b;
+--shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.1);
+--shadow-md: 0 10px 15px rgba(0, 0, 0, 0.2);
+--shadow-lg: 0 20px 25px rgba(0, 0, 0, 0.3);
+--shadow-glow: 0 0 20px var(--color-primary-glow);
+--radius-sm: 8px;
+--radius-md: 12px;
+--radius-lg: 16px;
+--radius-xl: 24px;
+--transition-fast: 0.2s ease;
+--transition-normal: 0.3s ease;
+}
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: 'Tajawal', sans-serif;
+outline: none;
+}
+body {
+background-color: var(--bg-color-main);
+color: var(--text-bright);
+display: flex;
+height: 100vh;
+width: 100vw;
+overflow: hidden;
+position: relative;
+}
+::-webkit-scrollbar {
+width: 8px;
+height: 8px;
+}
+::-webkit-scrollbar-track {
+background: var(--bg-color-main);
+}
+::-webkit-scrollbar-thumb {
+background: var(--border-light);
+border-radius: var(--radius-sm);
+}
+::-webkit-scrollbar-thumb:hover {
+background: var(--color-primary);
+}
+input[type="number"] {
+-moz-appearance: textfield;
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+-webkit-appearance: none;
+margin: 0;
+}
+.app-container {
+display: flex;
+width: 100%;
+height: 100%;
+}
+.sidebar {
+width: 280px;
+height: 100%;
+background: linear-gradient(180deg, var(--bg-color-panel) 0%, var(--bg-color-main) 100%);
+border-left: 1px solid var(--border-dark);
+display: flex;
+flex-direction: column;
+padding: 24px 16px;
+z-index: 100;
+box-shadow: var(--shadow-lg);
+flex-shrink: 0;
+}
+.sidebar-logo {
+font-size: 28px;
+font-weight: 900;
+color: var(--text-bright);
+margin-bottom: 40px;
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 12px;
+background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+text-shadow: var(--shadow-sm);
+}
+.sidebar-logo i {
+background: none;
+-webkit-text-fill-color: var(--color-primary);
+}
+.nav-menu {
+display: flex;
+flex-direction: column;
+gap: 8px;
+flex: 1;
+overflow-y: auto;
+}
+.nav-item {
+padding: 16px 20px;
+border-radius: var(--radius-md);
+cursor: pointer;
+transition: var(--transition-normal);
+display: flex;
+align-items: center;
+gap: 16px;
+color: var(--text-muted);
+font-weight: 700;
+font-size: 16px;
+border: 1px solid transparent;
+background: transparent;
+position: relative;
+overflow: hidden;
+}
+.nav-item:hover {
+background: rgba(79, 70, 229, 0.05);
+color: var(--text-bright);
+transform: translateX(-4px);
+}
+.nav-item.active {
+background: var(--color-primary);
+color: #ffffff;
+box-shadow: var(--shadow-glow);
+border-color: var(--color-primary-hover);
+transform: translateX(-6px);
+}
+.nav-item.active i {
+color: #ffffff;
+}
+.nav-item i {
+font-size: 20px;
+width: 24px;
+text-align: center;
+transition: var(--transition-fast);
+}
+.nav-item.secret-zone {
+margin-top: auto;
+border: 1px dashed var(--border-light);
+}
+.nav-item.secret-zone:hover {
+background: rgba(245, 158, 11, 0.1);
+color: var(--color-warning);
+border-color: var(--color-warning);
+box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+}
+.nav-item.secret-zone.active {
+background: var(--color-warning);
+color: #fff;
+border-color: var(--color-warning-hover);
+box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+}
+.main-area {
+flex: 1;
+height: 100%;
+background-color: var(--bg-color-main);
+position: relative;
+overflow: hidden;
+display: flex;
+flex-direction: column;
+}
+.top-bar {
+height: 80px;
+background: var(--bg-color-panel);
+border-bottom: 1px solid var(--border-dark);
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 0 40px;
+box-shadow: var(--shadow-sm);
+z-index: 90;
+}
+.top-bar-title {
+font-size: 22px;
+font-weight: 800;
+color: var(--text-bright);
+display: flex;
+align-items: center;
+gap: 12px;
+}
+.top-bar-actions {
+display: flex;
+align-items: center;
+gap: 16px;
+}
+.content-wrapper {
+flex: 1;
+padding: 32px 40px;
+overflow-y: auto;
+scroll-behavior: smooth;
+}
+.page-section {
+display: none;
+animation: sectionFadeIn 0.4s forwards;
+}
+.page-section.is-visible {
+display: block;
+}
+@keyframes sectionFadeIn {
+0% { opacity: 0; transform: translateY(15px); }
+100% { opacity: 1; transform: translateY(0); }
+}
+.btn {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+gap: 8px;
+padding: 12px 24px;
+border-radius: var(--radius-md);
+font-weight: 800;
+font-size: 14px;
+cursor: pointer;
+transition: var(--transition-normal);
+border: none;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+user-select: none;
+position: relative;
+overflow: hidden;
+}
+.btn:active {
+transform: scale(0.97);
+}
+.btn-primary {
+background: var(--color-primary);
+color: #fff;
+box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+}
+.btn-primary:hover {
+background: var(--color-primary-hover);
+box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+}
+.btn-success {
+background: var(--color-success);
+color: #fff;
+box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+.btn-success:hover {
+background: var(--color-success-hover);
+box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+.btn-danger {
+background: var(--color-danger);
+color: #fff;
+box-shadow: 0 4px 15px rgba(225, 29, 72, 0.3);
+}
+.btn-danger:hover {
+background: var(--color-danger-hover);
+box-shadow: 0 6px 20px rgba(225, 29, 72, 0.4);
+}
+.btn-warning {
+background: var(--color-warning);
+color: #fff;
+box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+.btn-warning:hover {
+background: var(--color-warning-hover);
+box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+.btn-secondary {
+background: var(--color-secondary);
+color: #fff;
+box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+}
+.btn-secondary:hover {
+background: var(--color-secondary-hover);
+box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
+}
+.btn-outline {
+background: transparent;
+color: var(--text-bright);
+border: 1px solid var(--border-light);
+}
+.btn-outline:hover {
+background: var(--bg-color-card);
+border-color: var(--text-muted);
+}
+.btn-block {
+width: 100%;
+}
+.grid-cards {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+gap: 24px;
+margin-bottom: 32px;
+}
+.stat-card {
+background: linear-gradient(135deg, var(--bg-color-panel), var(--bg-color-main));
+padding: 24px;
+border-radius: var(--radius-lg);
+border: 1px solid var(--border-dark);
+display: flex;
+align-items: center;
+justify-content: space-between;
+box-shadow: var(--shadow-md);
+transition: var(--transition-normal);
+position: relative;
+}
+.stat-card:hover {
+transform: translateY(-4px);
+box-shadow: var(--shadow-lg);
+border-color: var(--border-light);
+}
+.stat-card-indicator {
+position: absolute;
+top: 0;
+right: 0;
+width: 6px;
+height: 100%;
+border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+.stat-card-indicator.primary { background: var(--color-primary); }
+.stat-card-indicator.success { background: var(--color-success); }
+.stat-card-indicator.danger { background: var(--color-danger); }
+.stat-card-indicator.warning { background: var(--color-warning); }
+.stat-card-content h3 {
+font-size: 14px;
+color: var(--text-muted);
+margin-bottom: 8px;
+font-weight: 700;
+text-transform: uppercase;
+}
+.stat-card-content h2 {
+font-size: 28px;
+font-weight: 900;
+color: var(--text-bright);
+letter-spacing: 1px;
+}
+.stat-card-icon {
+width: 64px;
+height: 64px;
+border-radius: var(--radius-md);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 28px;
+}
+.icon-primary { background: rgba(79, 70, 229, 0.1); color: var(--color-primary); }
+.icon-success { background: rgba(16, 185, 129, 0.1); color: var(--color-success); }
+.icon-danger { background: rgba(225, 29, 72, 0.1); color: var(--color-danger); }
+.icon-warning { background: rgba(245, 158, 11, 0.1); color: var(--color-warning); }
+.data-panel {
+background: var(--bg-color-panel);
+border-radius: var(--radius-xl);
+border: 1px solid var(--border-dark);
+padding: 32px;
+margin-bottom: 32px;
+box-shadow: var(--shadow-md);
+}
+.data-panel-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 24px;
+padding-bottom: 16px;
+border-bottom: 1px solid var(--border-dark);
+}
+.data-panel-title {
+font-size: 18px;
+font-weight: 800;
+color: var(--text-bright);
+}
+.custom-table-container {
+width: 100%;
+overflow-x: auto;
+}
+.custom-table {
+width: 100%;
+border-collapse: separate;
+border-spacing: 0 8px;
+}
+.custom-table th, .custom-table td {
+padding: 16px 20px;
+text-align: right;
+background: var(--bg-color-card);
+}
+.custom-table th {
+background: transparent;
+color: var(--text-muted);
+font-weight: 800;
+font-size: 14px;
+text-transform: uppercase;
+border-bottom: 2px solid var(--border-dark);
+padding-bottom: 12px;
+}
+.custom-table td {
+color: var(--text-bright);
+font-weight: 600;
+font-size: 15px;
+border-top: 1px solid transparent;
+border-bottom: 1px solid transparent;
+transition: var(--transition-fast);
+}
+.custom-table td:first-child {
+border-right: 1px solid transparent;
+border-radius: 0 var(--radius-md) var(--radius-md) 0;
+font-weight: 800;
+}
+.custom-table td:last-child {
+border-left: 1px solid transparent;
+border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+.custom-table tr:hover td {
+background: rgba(30, 41, 59, 0.8);
+border-color: rgba(79, 70, 229, 0.2);
+}
+.badge {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+padding: 6px 12px;
+border-radius: var(--radius-sm);
+font-size: 12px;
+font-weight: 800;
+letter-spacing: 0.5px;
+}
+.badge-neutral { background: rgba(148, 163, 184, 0.1); color: var(--text-muted); border: 1px solid rgba(148, 163, 184, 0.2); }
+.badge-primary { background: rgba(79, 70, 229, 0.1); color: var(--color-primary); border: 1px solid rgba(79, 70, 229, 0.2); }
+.badge-success { background: rgba(16, 185, 129, 0.1); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.2); }
+.badge-danger { background: rgba(225, 29, 72, 0.1); color: var(--color-danger); border: 1px solid rgba(225, 29, 72, 0.2); }
+.badge-warning { background: rgba(245, 158, 11, 0.1); color: var(--color-warning); border: 1px solid rgba(245, 158, 11, 0.2); }
+.progress-bar-bg {
+width: 100%;
+height: 8px;
+background: var(--bg-color-main);
+border-radius: 4px;
+overflow: hidden;
+border: 1px solid var(--border-dark);
+margin-top: 8px;
+}
+.progress-bar-fill {
+height: 100%;
+border-radius: 4px;
+background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+transition: width 0.5s ease;
+}
+.modal-wrapper {
+position: fixed;
+top: 0;
+left: 0;
+width: 100vw;
+height: 100vh;
+background: rgba(3, 7, 18, 0.85);
+backdrop-filter: blur(5px);
+display: none;
+align-items: center;
+justify-content: center;
+z-index: 9999;
+opacity: 0;
+transition: opacity 0.3s ease;
+}
+.modal-wrapper.is-open {
+display: flex;
+opacity: 1;
+}
+.modal-content {
+background: var(--bg-color-panel);
+width: 100%;
+max-width: 600px;
+border-radius: var(--radius-xl);
+border: 1px solid var(--border-light);
+padding: 40px;
+box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+transform: scale(0.95) translateY(20px);
+transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+max-height: 90vh;
+overflow-y: auto;
+}
+.modal-wrapper.is-open .modal-content {
+transform: scale(1) translateY(0);
+}
+.modal-header {
+margin-bottom: 32px;
+text-align: center;
+}
+.modal-header h2 {
+font-size: 24px;
+font-weight: 900;
+color: var(--text-bright);
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 12px;
+}
+.form-group {
+margin-bottom: 24px;
+position: relative;
+}
+.form-group label {
+display: block;
+margin-bottom: 10px;
+font-size: 14px;
+font-weight: 800;
+color: var(--text-muted);
+}
+.form-control {
+width: 100%;
+background: var(--bg-color-main);
+border: 2px solid var(--border-dark);
+color: var(--text-bright);
+padding: 16px 20px;
+border-radius: var(--radius-md);
+font-size: 16px;
+font-weight: 700;
+transition: var(--transition-normal);
+}
+.form-control:focus {
+border-color: var(--color-primary);
+box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+select.form-control {
+appearance: none;
+background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+background-repeat: no-repeat;
+background-position: left 16px center;
+background-size: 16px;
+padding-left: 40px;
+}
+.modal-footer {
+display: flex;
+justify-content: flex-end;
+gap: 16px;
+margin-top: 40px;
+padding-top: 24px;
+border-top: 1px solid var(--border-dark);
+}
+.report-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+gap: 20px;
+margin-bottom: 30px;
+}
+.report-card {
+background: var(--bg-color-main);
+border: 2px solid var(--border-dark);
+border-radius: var(--radius-lg);
+padding: 24px;
+cursor: pointer;
+transition: var(--transition-normal);
+display: flex;
+flex-direction: column;
+align-items: center;
+text-align: center;
+gap: 16px;
+}
+.report-card:hover {
+border-color: var(--text-muted);
+transform: translateY(-4px);
+}
+.report-card.selected {
+border-color: var(--color-primary);
+background: rgba(79, 70, 229, 0.05);
+box-shadow: var(--shadow-glow);
+}
+.report-card i {
+font-size: 40px;
+color: var(--color-primary);
+}
+.report-card h3 {
+font-size: 18px;
+font-weight: 800;
+color: var(--text-bright);
+}
+.report-card p {
+font-size: 13px;
+color: var(--text-muted);
+font-weight: 500;
+line-height: 1.5;
+}
+.checkbox-list {
+display: flex;
+flex-direction: column;
+gap: 12px;
+background: var(--bg-color-main);
+padding: 24px;
+border-radius: var(--radius-md);
+border: 1px solid var(--border-dark);
+}
+.checkbox-item {
+display: flex;
+align-items: center;
+gap: 12px;
+cursor: pointer;
+}
+.checkbox-item input[type="checkbox"] {
+appearance: none;
+width: 24px;
+height: 24px;
+border: 2px solid var(--border-light);
+border-radius: 6px;
+background: transparent;
+cursor: pointer;
+position: relative;
+transition: var(--transition-fast);
+}
+.checkbox-item input[type="checkbox"]:checked {
+background: var(--color-primary);
+border-color: var(--color-primary);
+}
+.checkbox-item input[type="checkbox"]:checked::after {
+content: '\f00c';
+font-family: 'Font Awesome 6 Free';
+font-weight: 900;
+position: absolute;
+color: white;
+font-size: 14px;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+}
+.checkbox-item span {
+font-size: 15px;
+font-weight: 700;
+color: var(--text-bright);
+}
+.print-area-a4 {
+display: none;
+background: #ffffff;
+padding: 40px;
+border-radius: var(--radius-md);
+color: #000000;
+margin-top: 30px;
+box-shadow: 0 0 20px rgba(255,255,255,0.1);
+}
+.print-area-80mm {
+display: none;
+background: #ffffff;
+padding: 20px;
+border-radius: var(--radius-sm);
+color: #000000;
+width: 350px;
+margin: 30px auto;
+box-shadow: 0 0 20px rgba(255,255,255,0.1);
+font-family: monospace;
+}
+</style>
 </head>
 <body>
-
-    <div class="sidebar">
-        <div class="logo"><i class="fa-solid fa-gamepad"></i> مطعمي برو</div>
-        <div class="nav-item active" data-target="dashboard" onclick="switchTab('dashboard', this)"><i class="fa-solid fa-chart-line"></i> لوحة القيادة</div>
-        <div class="nav-item" data-target="employees" onclick="switchTab('employees', this)"><i class="fa-solid fa-users"></i> الموظفين</div>
-        <div class="nav-item" data-target="attendance" onclick="switchTab('attendance', this)"><i class="fa-solid fa-stopwatch"></i> الساعات والإضافي</div>
-        <div class="nav-item" data-target="finances" onclick="switchTab('finances', this)"><i class="fa-solid fa-coins"></i> الدفعات والمالية</div>
-        <div class="nav-item" data-target="closed-boxes" onclick="switchTab('closed-boxes', this)"><i class="fa-solid fa-box-archive"></i> الصناديق المغلقة</div>
-        <div class="nav-item" data-target="reports" onclick="switchTab('reports', this)"><i class="fa-solid fa-file-export"></i> التصدير المخصص</div>
-        <div class="nav-item secret-tab" onclick="openPasswordModal()"><i class="fa-solid fa-lock"></i> ملاحظات الإدارة</div>
-        <div class="nav-item" style="margin-top: auto;" data-target="settings" onclick="switchTab('settings', this)"><i class="fa-solid fa-gear"></i> الإعدادات</div>
-    </div>
-
-    <div class="main-content">
-        
-        <div id="dashboard" class="section-page active">
-            <div class="header">
-                <div>
-                    <h1><i class="fa-solid fa-chart-line" style="color:var(--primary)"></i> لوحة القيادة - الصندوق الحالي</h1>
-                    <p style="color: var(--secondary); margin-top:5px; font-weight:700;" id="box-date-label"></p>
-                </div>
-                <button class="btn btn-danger" onclick="confirmCloseBox()"><i class="fa-solid fa-box-open"></i> إغلاق الصندوق الحالي وأرشفته</button>
-            </div>
-            <div class="cards-grid">
-                <div class="card emerald">
-                    <div><h3>المتبقي للدفع (رواتب)</h3><h2 id="dash-remaining">0</h2></div>
-                    <div class="icon" style="color: var(--success); background: rgba(16,185,129,0.15);"><i class="fa-solid fa-hand-holding-dollar"></i></div>
-                </div>
-                <div class="card rose">
-                    <div><h3>إجمالي السلف بالصندوق</h3><h2 id="dash-advances">0</h2></div>
-                    <div class="icon" style="color: var(--danger); background: rgba(239,68,68,0.15);"><i class="fa-solid fa-money-bill-transfer"></i></div>
-                </div>
-                <div class="card sky">
-                    <div><h3>إجمالي الدفعات المسلمة</h3><h2 id="dash-paid">0</h2></div>
-                    <div class="icon" style="color: var(--secondary); background: rgba(14,165,233,0.15);"><i class="fa-solid fa-sack-dollar"></i></div>
-                </div>
-                <div class="card">
-                    <div><h3>ساعات الإضافي الكلية</h3><h2 id="dash-overtime">0</h2></div>
-                    <div class="icon" style="color: var(--primary); background: rgba(139,92,246,0.15);"><i class="fa-solid fa-bolt"></i></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="employees" class="section-page">
-            <div class="header">
-                <h1><i class="fa-solid fa-users" style="color:var(--primary)"></i> إدارة الموظفين</h1>
-                <button class="btn btn-primary" onclick="openModal('empModal')"><i class="fa-solid fa-plus"></i> تسجيل موظف جديد</button>
-            </div>
-            <div class="panel">
-                <table>
-                    <thead><tr><th>الاسم الكامل</th><th>المنصب / الدور</th><th>الراتب الأساسي</th><th>سعر الساعة العادية</th><th>الإجراءات</th></tr></thead>
-                    <tbody id="emp-body"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="attendance" class="section-page">
-            <div class="header">
-                <h1><i class="fa-solid fa-stopwatch" style="color:var(--primary)"></i> تسجيل ساعات العمل</h1>
-            </div>
-            <div class="panel">
-                <table>
-                    <thead><tr><th>الموظف</th><th>الساعات العادية الكلية</th><th>الساعات الإضافية (x1.5)</th><th>إجراء</th></tr></thead>
-                    <tbody id="att-body"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="finances" class="section-page">
-            <div class="header">
-                <h1><i class="fa-solid fa-coins" style="color:var(--primary)"></i> التصفية المالية والدفعات</h1>
-            </div>
-            <div class="panel">
-                <table>
-                    <thead><tr><th>الموظف</th><th>إجمالي المستحق</th><th>تم دفعه</th><th>الرصيد المتبقي</th><th>العمليات المالية</th></tr></thead>
-                    <tbody id="fin-body"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="closed-boxes" class="section-page">
-            <div class="header">
-                <h1><i class="fa-solid fa-box-archive" style="color:var(--primary)"></i> أرشيف الصناديق المغلقة</h1>
-            </div>
-            <div class="panel">
-                <table>
-                    <thead><tr><th>رقم الصندوق</th><th>تاريخ الفتح</th><th>تاريخ الإغلاق</th><th>عدد المعاملات</th><th>إجمالي المصروفات (دفعات)</th><th>إجراء</th></tr></thead>
-                    <tbody id="boxes-body"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="box-details" class="section-page">
-            <div class="header">
-                <h1><i class="fa-solid fa-magnifying-glass-chart" style="color:var(--primary)"></i> تفاصيل الصندوق المغلق</h1>
-                <button class="btn btn-info" onclick="switchTab('closed-boxes', document.querySelector('[data-target=\'closed-boxes\']'))"><i class="fa-solid fa-arrow-right"></i> العودة للأرشيف</button>
-            </div>
-            <div class="box-detail-header">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <h2 id="detail-box-title" style="color:var(--secondary)"></h2>
-                    <span id="detail-box-totals" style="color:var(--success); font-size:20px; font-weight:900;"></span>
-                </div>
-            </div>
-            <div class="panel">
-                <div class="panel-header"><h3>جداول رواتب وتصفية الموظفين خلال هذا الصندوق</h3></div>
-                <table>
-                    <thead><tr><th>الموظف</th><th>الأساسي + الساعات</th><th>السلف</th><th>الخصومات</th><th>المكافآت</th><th>المدفوع</th><th>المتبقي ذمة</th></tr></thead>
-                    <tbody id="detail-emp-body"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="secret-notes" class="section-page">
-            <div class="header">
-                <h1 style="color: var(--warning);"><i class="fa-solid fa-user-secret"></i> السجل السري للإدارة</h1>
-                <button class="btn btn-warning" onclick="openNoteModalPrep()"><i class="fa-solid fa-plus"></i> إضافة ملاحظة لملف موظف</button>
-            </div>
-            <div class="panel">
-                <table>
-                    <thead><tr><th>الموظف المعني</th><th>التصنيف</th><th>نص الملاحظة والتفاصيل</th><th>تاريخ الإضافة</th></tr></thead>
-                    <tbody id="notes-body"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="reports" class="section-page">
-            <div class="header">
-                <h1><i class="fa-solid fa-file-export" style="color:var(--primary)"></i> التصدير المخصص الشامل</h1>
-                <button class="btn btn-primary" onclick="generateCustomReport()"><i class="fa-solid fa-wand-magic-sparkles"></i> توليد التقرير</button>
-            </div>
-            <div class="panel">
-                <div class="form-group" style="max-width:400px;">
-                    <label>اختر مصدر البيانات (الصندوق)</label>
-                    <select id="exp-box-select"></select>
-                </div>
-                <h3 style="color:var(--secondary); margin-bottom:15px; margin-top:30px;">حدد البيانات المطلوبة في التقرير:</h3>
-                <div class="export-options">
-                    <label class="custom-checkbox"><input type="checkbox" id="chk-emp" checked><span>معلومات الموظف الأساسية</span></label>
-                    <label class="custom-checkbox"><input type="checkbox" id="chk-att" checked><span>ساعات العمل (العادية والإضافية)</span></label>
-                    <label class="custom-checkbox"><input type="checkbox" id="chk-adv" checked><span>تفاصيل السلف</span></label>
-                    <label class="custom-checkbox"><input type="checkbox" id="chk-ded" checked><span>تفاصيل الخصومات</span></label>
-                    <label class="custom-checkbox"><input type="checkbox" id="chk-bon" checked><span>تفاصيل المكافآت</span></label>
-                    <label class="custom-checkbox"><input type="checkbox" id="chk-pay" checked><span>سجل الدفعات المسلمة</span></label>
-                    <label class="custom-checkbox"><input type="checkbox" id="chk-net" checked><span>الملخص المالي (الصافي والمتبقي)</span></label>
-                    <label class="custom-checkbox"><input type="checkbox" id="chk-notes"><span>الملاحظات السرية (يتطلب التحقق)</span></label>
-                </div>
-                <textarea id="report-output" readonly></textarea>
-                <button class="btn btn-success" id="copy-btn" style="display:none; margin-top:15px; width:100%; justify-content:center;" onclick="copyReportText()"><i class="fa-solid fa-copy"></i> نسخ التقرير</button>
-            </div>
-        </div>
-        
-        <div id="settings" class="section-page">
-            <div class="header"><h1><i class="fa-solid fa-gear" style="color:var(--primary)"></i> إعدادات النظام</h1></div>
-            <div class="panel" style="max-width: 500px;">
-                <div class="form-group">
-                    <label>رمز العملة المحلية</label>
-                    <input type="text" id="set-currency" placeholder="مثال: ل.س, $, دينار...">
-                </div>
-                <button class="btn btn-success" onclick="saveSettingsBase()"><i class="fa-solid fa-floppy-disk"></i> حفظ وتطبيق الإعدادات</button>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Modals -->
-    <div class="modal-overlay" id="passwordModal">
-        <div class="modal">
-            <h2 style="color:var(--warning); margin-bottom:30px; text-align:center;"><i class="fa-solid fa-lock"></i> منطقة محظورة</h2>
-            <div class="form-group">
-                <label style="text-align:center;">يرجى إدخال كلمة سر الإدارة للوصول</label>
-                <input type="password" id="secret-password" style="text-align:center; font-size:24px; letter-spacing:5px;" placeholder="***">
-            </div>
-            <div class="modal-actions" style="justify-content:center;">
-                <button class="btn btn-danger" onclick="closeModal('passwordModal')">إلغاء</button>
-                <button class="btn btn-warning" onclick="verifyPasswordAction()">دخول</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="passwordExportModal">
-        <div class="modal">
-            <h2 style="color:var(--warning); margin-bottom:30px; text-align:center;"><i class="fa-solid fa-shield-halved"></i> تصريح التصدير</h2>
-            <div class="form-group">
-                <label style="text-align:center;">تضمين الملاحظات يتطلب كلمة السر</label>
-                <input type="password" id="export-password" style="text-align:center; font-size:24px; letter-spacing:5px;" placeholder="***">
-            </div>
-            <div class="modal-actions" style="justify-content:center;">
-                <button class="btn btn-danger" onclick="closeModal('passwordExportModal')">إلغاء التضمين</button>
-                <button class="btn btn-warning" onclick="verifyExportPassword()">تأكيد وتوليد</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="empModal">
-        <div class="modal">
-            <h2 id="empModalTitle" style="color:var(--primary); margin-bottom:30px;"><i class="fa-solid fa-user-plus"></i> بطاقة موظف</h2>
-            <input type="hidden" id="empId">
-            <div class="form-group"><label>الاسم الكامل</label><input type="text" id="empName" placeholder="أدخل اسم الموظف..."></div>
-            <div class="form-group"><label>المنصب أو الدور</label><input type="text" id="empRole" placeholder="مثال: شيف رئيسي، كاشير..."></div>
-            <div class="form-group"><label>الراتب الأساسي (ثابت)</label><input type="number" id="empBase" value="0"></div>
-            <div class="form-group"><label>تسعيرة ساعة العمل العادية</label><input type="number" id="empHourly" value="0"></div>
-            <div class="modal-actions"><button class="btn btn-danger" onclick="closeModal('empModal')">إلغاء</button><button class="btn btn-primary" onclick="saveEmployeeData()">حفظ البطاقة</button></div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="hoursModal">
-        <div class="modal">
-            <h2 style="color:var(--secondary); margin-bottom:30px;"><i class="fa-solid fa-clock-rotate-left"></i> إثبات حضور وساعات</h2>
-            <input type="hidden" id="hoursEmpId">
-            <div class="form-group"><label>عدد الساعات العادية المنجزة</label><input type="number" id="hNormal" step="0.5" value="0"></div>
-            <div class="form-group"><label>عدد الساعات الإضافية (تُحسب تلقائياً x1.5)</label><input type="number" id="hOver" step="0.5" value="0"></div>
-            <div class="modal-actions"><button class="btn btn-danger" onclick="closeModal('hoursModal')">إلغاء</button><button class="btn btn-info" onclick="saveHoursData()">اعتماد الساعات</button></div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="finModal">
-        <div class="modal">
-            <h2 style="color:var(--success); margin-bottom:30px;"><i class="fa-solid fa-file-invoice-dollar"></i> سند مالي جديد</h2>
-            <input type="hidden" id="finEmpId">
-            <div class="form-group">
-                <label>حدد نوع الحركة المالية</label>
-                <select id="finType">
-                    <option value="payment">تسليم دفعة من الراتب (Payment)</option>
-                    <option value="advance">سحب سلفة مسجلة (Advance)</option>
-                    <option value="deduction">تسجيل خصم أو غرامة (Deduction)</option>
-                    <option value="bonus">منح مكافأة أو إكرامية (Bonus)</option>
-                </select>
-            </div>
-            <div class="form-group"><label>القيمة المالية المعتمدة</label><input type="number" id="finAmount"></div>
-            <div class="form-group"><label>البيان / الملاحظات</label><input type="text" id="finNote" placeholder="سبب الدفعة أو الخصم..."></div>
-            <div class="modal-actions"><button class="btn btn-danger" onclick="closeModal('finModal')">إلغاء</button><button class="btn btn-success" onclick="saveFinData()">حفظ السند وتنفيذه</button></div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="noteModal">
-        <div class="modal">
-            <h2 style="color:var(--warning); margin-bottom:30px;"><i class="fa-solid fa-comment-medical"></i> تحرير ملاحظة إدارية</h2>
-            <div class="form-group"><label>ارتباط الملاحظة بالموظف</label><select id="noteEmpId"></select></div>
-            <div class="form-group">
-                <label>التصنيف</label>
-                <select id="noteType">
-                    <option value="إيجابية">تقييم إيجابي / أداء ممتاز 🌟</option>
-                    <option value="سلبية">إنذار / تقييم سلبي ❌</option>
-                    <option value="عادية">ملاحظة سير عمل عادية 📝</option>
-                </select>
-            </div>
-            <div class="form-group"><label>نص الملاحظة الواضح</label><input type="text" id="noteText" placeholder="اكتب التفاصيل بدقة..."></div>
-            <div class="modal-actions"><button class="btn btn-danger" onclick="closeModal('noteModal')">إلغاء</button><button class="btn btn-warning" onclick="saveSecretNote()">إدراج في السجل المحفوظ</button></div>
-        </div>
-    </div>
-
-    <script>
-        const { ipcRenderer } = require('electron');
-        let db = { employees: [], currentBox: { id: Date.now(), startDate: new Date().toISOString(), transactions: [], attendance: [], payments: [], notes: [] }, closedBoxes: [], settings: { currency: '$' } };
-        let secretUnlocked = false;
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            db = await ipcRenderer.invoke('get-db');
-            if(!db.currentBox) db.currentBox = { id: Date.now(), startDate: new Date().toISOString(), transactions: [], attendance: [], payments: [], notes: [] };
-            if(!db.closedBoxes) db.closedBoxes = [];
-            document.getElementById('set-currency').value = db.settings.currency || '$';
-            refreshMainUI();
-        });
-
-        function switchTab(targetId, elem) {
-            if(elem) {
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                elem.classList.add('active');
-            }
-            document.querySelectorAll('.section-page').forEach(s => {
-                s.classList.remove('active');
-                setTimeout(() => { if(!s.classList.contains('active')) s.style.display = 'none'; }, 400);
-            });
-            const target = document.getElementById(targetId);
-            target.style.display = 'block';
-            setTimeout(() => { target.classList.add('active'); }, 50);
-            
-            if(targetId === 'reports') populateExportDropdown();
-        }
-
-        function openModal(id) {
-            const m = document.getElementById(id);
-            m.style.display = 'flex';
-            setTimeout(() => { m.classList.add('active'); }, 10);
-        }
-        function closeModal(id) {
-            const m = document.getElementById(id);
-            m.classList.remove('active');
-            setTimeout(() => { m.style.display = 'none'; }, 300);
-        }
-
-        async function flushDB() {
-            await ipcRenderer.invoke('save-db', db);
-            refreshMainUI();
-        }
-
-        function runEngine(box, empId) {
-            const emp = db.employees.find(e => e.id === empId);
-            if(!emp) return null;
-            let nH = 0, oH = 0, adv = 0, ded = 0, bon = 0, paid = 0;
-            box.attendance.filter(a => a.empId === empId).forEach(a => { nH += Number(a.normal); oH += Number(a.over); });
-            box.transactions.filter(t => t.empId === empId).forEach(t => {
-                if(t.type === 'advance') adv += Number(t.amount);
-                if(t.type === 'deduction') ded += Number(t.amount);
-                if(t.type === 'bonus') bon += Number(t.amount);
-            });
-            box.payments.filter(p => p.empId === empId).forEach(p => paid += Number(p.amount));
-            const earn = (nH * Number(emp.hourlyRate)) + (oH * Number(emp.hourlyRate) * 1.5);
-            const net = Number(emp.baseSalary) + earn + bon - adv - ded;
-            const rem = net - paid;
-            const prog = net > 0 ? Math.min((paid / net) * 100, 100) : 0;
-            return { base: Number(emp.baseSalary), nH, oH, earn, adv, ded, bon, paid, net, rem, prog };
-        }
-
-        function formatM(val) { return Number(val).toLocaleString('en-US') + ' ' + (db.settings.currency || '$'); }
-        function formatD(dStr) { return new Date(dStr).toLocaleString('ar-EG', {year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}); }
-
-        function refreshMainUI() {
-            document.getElementById('box-date-label').innerText = `تم فتح الصندوق بتاريخ: ${formatD(db.currentBox.startDate)}`;
-            const eb = document.getElementById('emp-body'); eb.innerHTML = '';
-            const ab = document.getElementById('att-body'); ab.innerHTML = '';
-            const fb = document.getElementById('fin-body'); fb.innerHTML = '';
-            let trm=0, tadv=0, tovr=0, tpd=0;
-            
-            db.employees.forEach(e => {
-                const f = runEngine(db.currentBox, e.id);
-                trm += f.rem; tadv += f.adv; tovr += f.oH; tpd += f.paid;
-                
-                eb.innerHTML += `<tr><td>${e.name}</td><td>${e.role}</td><td>${formatM(e.baseSalary)}</td><td>${formatM(e.hourlyRate)}</td><td><button class="btn btn-warning" style="padding:8px 15px;" onclick="loadEmp(${e.id})"><i class="fa-solid fa-pen"></i></button></td></tr>`;
-                ab.innerHTML += `<tr><td>${e.name}</td><td><span class="badge badge-neu">${f.nH}</span></td><td><span class="badge badge-pos">${f.oH}</span></td><td><button class="btn btn-info" style="padding:8px 15px;" onclick="prepAtt(${e.id})"><i class="fa-solid fa-clock"></i> تسجيل</button></td></tr>`;
-                fb.innerHTML += `<tr>
-                    <td>${e.name}</td><td>${formatM(f.net)}</td><td><span style="color:var(--success)">${formatM(f.paid)}</span></td>
-                    <td><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>المتبقي:</span><span>${formatM(f.rem)}</span></div><div class="progress-wrapper"><div class="progress-bar" style="width:${f.prog}%"></div></div></td>
-                    <td><button class="btn btn-success" style="padding:8px 15px;" onclick="prepFin(${e.id})"><i class="fa-solid fa-money-bill"></i> سند</button></td>
-                </tr>`;
-            });
-            document.getElementById('dash-remaining').innerText = formatM(trm);
-            document.getElementById('dash-advances').innerText = formatM(tadv);
-            document.getElementById('dash-paid').innerText = formatM(tpd);
-            document.getElementById('dash-overtime').innerText = tovr;
-
-            const bb = document.getElementById('boxes-body'); bb.innerHTML = '';
-            db.closedBoxes.slice().reverse().forEach(b => {
-                let pd = b.payments.reduce((s,x)=>s+Number(x.amount),0);
-                bb.innerHTML += `<tr><td>#${b.id}</td><td>${formatD(b.startDate)}</td><td>${formatD(b.endDate)}</td><td>${b.transactions.length + b.payments.length + b.attendance.length}</td><td>${formatM(pd)}</td><td><button class="btn btn-primary" style="padding:8px 15px;" onclick="renderClosedBoxDetails(${b.id})"><i class="fa-solid fa-eye"></i> فتح واستعراض</button></td></tr>`;
-            });
-
-            if(secretUnlocked) buildNotesTable();
-        }
-
-        function loadEmp(id) {
-            const e = db.employees.find(x => x.id === id);
-            document.getElementById('empId').value = e.id; document.getElementById('empName').value = e.name;
-            document.getElementById('empRole').value = e.role; document.getElementById('empBase').value = e.baseSalary;
-            document.getElementById('empHourly').value = e.hourlyRate; openModal('empModal');
-        }
-        function saveEmployeeData() {
-            const id = document.getElementById('empId').value;
-            const d = { id: id ? Number(id) : Date.now(), name: document.getElementById('empName').value, role: document.getElementById('empRole').value, baseSalary: document.getElementById('empBase').value||0, hourlyRate: document.getElementById('empHourly').value||0 };
-            if(id) { db.employees[db.employees.findIndex(e => e.id == id)] = d; } else { db.employees.push(d); }
-            closeModal('empModal'); flushDB();
-        }
-        function prepAtt(id) { document.getElementById('hoursEmpId').value = id; document.getElementById('hNormal').value = ''; document.getElementById('hOver').value = ''; openModal('hoursModal'); }
-        function saveHoursData() {
-            db.currentBox.attendance.push({ id: Date.now(), empId: Number(document.getElementById('hoursEmpId').value), normal: document.getElementById('hNormal').value||0, over: document.getElementById('hOver').value||0, date: new Date().toISOString() });
-            closeModal('hoursModal'); flushDB();
-        }
-        function prepFin(id) { document.getElementById('finEmpId').value = id; document.getElementById('finAmount').value = ''; document.getElementById('finNote').value = ''; openModal('finModal'); }
-        function saveFinData() {
-            const eid = Number(document.getElementById('finEmpId').value), typ = document.getElementById('finType').value, amt = document.getElementById('finAmount').value, nt = document.getElementById('finNote').value;
-            if(!amt) return;
-            if(typ === 'payment') db.currentBox.payments.push({ id: Date.now(), empId: eid, amount: amt, note: nt, date: new Date().toISOString() });
-            else db.currentBox.transactions.push({ id: Date.now(), empId: eid, type: typ, amount: amt, note: nt, date: new Date().toISOString() });
-            closeModal('finModal'); flushDB();
-        }
-
-        function openPasswordModal() {
-            if(secretUnlocked) { switchTab('secret-notes', document.querySelector('.secret-tab')); return; }
-            document.getElementById('secret-password').value = '';
-            openModal('passwordModal');
-        }
-        function verifyPasswordAction() {
-            if(document.getElementById('secret-password').value === 'عبد') {
-                secretUnlocked = true;
-                closeModal('passwordModal');
-                switchTab('secret-notes', document.querySelector('.secret-tab'));
-                buildNotesTable();
-            } else { alert('كلمة السر غير صحيحة!'); }
-        }
-        function openNoteModalPrep() {
-            document.getElementById('noteEmpId').innerHTML = db.employees.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
-            document.getElementById('noteText').value = ''; openModal('noteModal');
-        }
-        function saveSecretNote() {
-            db.currentBox.notes.push({ id: Date.now(), empId: Number(document.getElementById('noteEmpId').value), type: document.getElementById('noteType').value, text: document.getElementById('noteText').value, date: new Date().toISOString() });
-            closeModal('noteModal'); flushDB();
-        }
-        function buildNotesTable() {
-            const nb = document.getElementById('notes-body'); nb.innerHTML = '';
-            db.currentBox.notes.forEach(n => {
-                const e = db.employees.find(x => x.id === n.empId);
-                let cls = n.type.includes('إيجابية') ? 'badge-pos' : (n.type.includes('سلبية') ? 'badge-neg' : 'badge-neu');
-                nb.innerHTML += `<tr><td>${e?e.name:'?'}</td><td><span class="badge ${cls}">${n.type}</span></td><td>${n.text}</td><td>${formatD(n.date)}</td></tr>`;
-            });
-        }
-
-        function confirmCloseBox() {
-            if(confirm('سيتم تصفير جميع الحسابات الحالية وحفظها كأرشيف مغلق، هل أنت متأكد؟')) {
-                db.currentBox.endDate = new Date().toISOString();
-                db.closedBoxes.push(JSON.parse(JSON.stringify(db.currentBox)));
-                db.currentBox = { id: Date.now(), startDate: new Date().toISOString(), transactions: [], attendance: [], payments: [], notes: [] };
-                flushDB();
-            }
-        }
-
-        function renderClosedBoxDetails(boxId) {
-            const bx = db.closedBoxes.find(b => b.id === boxId);
-            if(!bx) return;
-            document.getElementById('detail-box-title').innerText = `تفاصيل الصندوق رقم #${bx.id}`;
-            let ttRem=0, ttPd=0;
-            const dbb = document.getElementById('detail-emp-body'); dbb.innerHTML = '';
-            db.employees.forEach(e => {
-                const f = runEngine(bx, e.id);
-                ttRem+=f.rem; ttPd+=f.paid;
-                if(f.nH>0 || f.oH>0 || f.adv>0 || f.ded>0 || f.bon>0 || f.paid>0 || f.base>0) {
-                    dbb.innerHTML += `<tr><td>${e.name}</td><td>${formatM(f.base+f.earn)}</td><td><span style="color:var(--warning)">${formatM(f.adv)}</span></td><td><span style="color:var(--danger)">${formatM(f.ded)}</span></td><td><span style="color:var(--success)">${formatM(f.bon)}</span></td><td>${formatM(f.paid)}</td><td><span style="font-weight:900">${formatM(f.rem)}</span></td></tr>`;
-                }
-            });
-            document.getElementById('detail-box-totals').innerText = `إجمالي المدفوعات: ${formatM(ttPd)} | إجمالي الذمم المتبقية: ${formatM(ttRem)}`;
-            switchTab('box-details', null);
-        }
-
-        function populateExportDropdown() {
-            const sel = document.getElementById('exp-box-select');
-            sel.innerHTML = `<option value="current">الصندوق الحالي (النشط)</option>`;
-            db.closedBoxes.slice().reverse().forEach(b => { sel.innerHTML += `<option value="${b.id}">الصندوق المغلق #${b.id} (${formatD(b.startDate)})</option>`; });
-        }
-
-        function generateCustomReport() {
-            if(document.getElementById('chk-notes').checked) {
-                document.getElementById('export-password').value = '';
-                openModal('passwordExportModal');
-            } else { finalizeExport(false); }
-        }
-        function verifyExportPassword() {
-            if(document.getElementById('export-password').value === 'عبد') {
-                closeModal('passwordExportModal'); finalizeExport(true);
-            } else { alert('كلمة سر خاطئة، لن يتم التصدير!'); }
-        }
-        function finalizeExport(allowNotes) {
-            const boxId = document.getElementById('exp-box-select').value;
-            const targetBox = boxId === 'current' ? db.currentBox : db.closedBoxes.find(b => b.id == boxId);
-            if(!targetBox) return;
-            
-            let str = `====== تقرير مطعمي برو ======\n`;
-            str += `الصندوق المستهدف: ${boxId==='current'?'الحالي النشط':'مغلق رقم '+targetBox.id}\n`;
-            str += `تاريخ بدء الصندوق: ${formatD(targetBox.startDate)}\n`;
-            if(targetBox.endDate) str += `تاريخ الإغلاق: ${formatD(targetBox.endDate)}\n`;
-            str += `===============================\n\n`;
-
-            const cE = document.getElementById('chk-emp').checked;
-            const cAt = document.getElementById('chk-att').checked;
-            const cAd = document.getElementById('chk-adv').checked;
-            const cDd = document.getElementById('chk-ded').checked;
-            const cBn = document.getElementById('chk-bon').checked;
-            const cPy = document.getElementById('chk-pay').checked;
-            const cNt = document.getElementById('chk-net').checked;
-            
-            db.employees.forEach(e => {
-                const f = runEngine(targetBox, e.id);
-                let hasData = f.nH>0||f.oH>0||f.adv>0||f.ded>0||f.bon>0||f.paid>0||f.base>0;
-                if(!hasData) return;
-                
-                str += `[ الموظف: ${e.name} | ${e.role} ]\n`;
-                if(cE) str += ` - الراتب الأساسي: ${formatM(e.baseSalary)} | سعر الساعة: ${formatM(e.hourlyRate)}\n`;
-                if(cAt) str += ` - الساعات المنجزة: ${f.nH} عادية | ${f.oH} إضافية (أرباح الساعات: ${formatM(f.earn)})\n`;
-                if(cAd && f.adv>0) {
-                    str += ` - السلف المسحوبة: ${formatM(f.adv)}\n`;
-                    targetBox.transactions.filter(t=>t.empId===e.id&&t.type==='advance').forEach(t=>str+=`   * ${formatM(t.amount)} (${t.note}) [${formatD(t.date)}]\n`);
-                }
-                if(cDd && f.ded>0) {
-                    str += ` - الخصومات والغرامات: ${formatM(f.ded)}\n`;
-                    targetBox.transactions.filter(t=>t.empId===e.id&&t.type==='deduction').forEach(t=>str+=`   * ${formatM(t.amount)} (${t.note}) [${formatD(t.date)}]\n`);
-                }
-                if(cBn && f.bon>0) {
-                    str += ` - المكافآت والإكراميات: ${formatM(f.bon)}\n`;
-                    targetBox.transactions.filter(t=>t.empId===e.id&&t.type==='bonus').forEach(t=>str+=`   * ${formatM(t.amount)} (${t.note}) [${formatD(t.date)}]\n`);
-                }
-                if(cPy && f.paid>0) {
-                    str += ` - الدفعات المسلمة (رواتب): ${formatM(f.paid)}\n`;
-                    targetBox.payments.filter(p=>p.empId===e.id).forEach(p=>str+=`   * ${formatM(p.amount)} (${p.note}) [${formatD(p.date)}]\n`);
-                }
-                if(allowNotes) {
-                    const nts = targetBox.notes.filter(n=>n.empId===e.id);
-                    if(nts.length>0) {
-                        str += ` - ملاحظات الإدارة:\n`;
-                        nts.forEach(n=>str+=`   * [${n.type}] ${n.text} (${formatD(n.date)})\n`);
-                    }
-                }
-                if(cNt) str += ` >> صافي الاستحقاق: ${formatM(f.net)} | الذمة المتبقية: ${formatM(f.rem)}\n`;
-                str += `-------------------------------\n`;
-            });
-            const out = document.getElementById('report-output');
-            out.value = str; out.style.display = 'block';
-            document.getElementById('copy-btn').style.display = 'flex';
-        }
-        function copyReportText() {
-            const out = document.getElementById('report-output');
-            out.select(); document.execCommand('copy');
-            const b = document.getElementById('copy-btn');
-            b.innerHTML = '<i class="fa-solid fa-check"></i> تم النسخ بنجاح!';
-            b.classList.replace('btn-success', 'btn-primary');
-            setTimeout(()=>{ b.innerHTML = '<i class="fa-solid fa-copy"></i> نسخ التقرير'; b.classList.replace('btn-primary', 'btn-success'); }, 3000);
-        }
-
-        function saveSettingsBase() { db.settings.currency = document.getElementById('set-currency').value || '$'; flushDB(); alert('تم تطبيق الإعدادات'); }
-    </script>
+<div class="app-container">
+<div class="sidebar">
+<div class="sidebar-logo"><i class="fa-solid fa-layer-group"></i> <span>مطعمي برو</span></div>
+<div class="nav-menu">
+<div class="nav-item active" data-view="dashboard" onclick="navig(this, 'dashboard')"><i class="fa-solid fa-chart-line"></i><span>مؤشرات الأداء</span></div>
+<div class="nav-item" data-view="staff" onclick="navig(this, 'staff')"><i class="fa-solid fa-users-gear"></i><span>إدارة الكوادر</span></div>
+<div class="nav-item" data-view="time" onclick="navig(this, 'time')"><i class="fa-solid fa-business-time"></i><span>سجل الحضور</span></div>
+<div class="nav-item" data-view="finance" onclick="navig(this, 'finance')"><i class="fa-solid fa-vault"></i><span>الخزينة والرواتب</span></div>
+<div class="nav-item" data-view="archive" onclick="navig(this, 'archive')"><i class="fa-solid fa-boxes-packing"></i><span>الأرشيف المالي</span></div>
+<div class="nav-item" data-view="report" onclick="navig(this, 'report')"><i class="fa-solid fa-print"></i><span>مركز التقارير</span></div>
+<div class="nav-item secret-zone" onclick="triggerSec()"><i class="fa-solid fa-user-secret"></i><span>الرقابة الإدارية</span></div>
+<div class="nav-item" data-view="settings" onclick="navig(this, 'settings')"><i class="fa-solid fa-sliders"></i><span>إعدادات النظام</span></div>
+</div>
+</div>
+<div class="main-area">
+<div class="top-bar">
+<div class="top-bar-title" id="tb-title"><i class="fa-solid fa-chart-line"></i> مؤشرات الأداء الحالية</div>
+<div class="top-bar-actions">
+<div style="text-align:left; line-height:1.2;">
+<div style="font-size:12px; color:var(--text-muted); font-weight:700;">حالة الصندوق</div>
+<div style="font-size:14px; color:var(--color-success); font-weight:900;" id="st-box-date">مفتوح الآن</div>
+</div>
+<button class="btn btn-danger" onclick="cnfClose()"><i class="fa-solid fa-power-off"></i> إقفال الصندوق</button>
+</div>
+</div>
+<div class="content-wrapper">
+<div id="dashboard" class="page-section is-visible">
+<div class="grid-cards">
+<div class="stat-card">
+<div class="stat-card-indicator warning"></div>
+<div class="stat-card-content"><h3>الذمم المستحقة (رواتب)</h3><h2 id="dh-sal">0</h2></div>
+<div class="stat-card-icon icon-warning"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+</div>
+<div class="stat-card">
+<div class="stat-card-indicator danger"></div>
+<div class="stat-card-content"><h3>سلف وخصومات مقتطعة</h3><h2 id="dh-ded">0</h2></div>
+<div class="stat-card-icon icon-danger"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+</div>
+<div class="stat-card">
+<div class="stat-card-indicator success"></div>
+<div class="stat-card-content"><h3>إجمالي السيولة المصروفة</h3><h2 id="dh-pay">0</h2></div>
+<div class="stat-card-icon icon-success"><i class="fa-solid fa-sack-dollar"></i></div>
+</div>
+<div class="stat-card">
+<div class="stat-card-indicator primary"></div>
+<div class="stat-card-content"><h3>ساعات الإضافي المسجلة</h3><h2 id="dh-ovr">0</h2></div>
+<div class="stat-card-icon icon-primary"><i class="fa-solid fa-bolt"></i></div>
+</div>
+</div>
+<div class="data-panel">
+<div class="data-panel-header"><div class="data-panel-title">المخطط البياني للرواتب الصافية</div></div>
+<div style="height:250px; width:100%;"><canvas id="main-chart"></canvas></div>
+</div>
+</div>
+<div id="staff" class="page-section">
+<div class="data-panel">
+<div class="data-panel-header">
+<div class="data-panel-title">قاعدة بيانات الكوادر</div>
+<button class="btn btn-primary" onclick="opnMd('md-emp')"><i class="fa-solid fa-plus"></i> إدراج موظف</button>
+</div>
+<div class="custom-table-container">
+<table class="custom-table">
+<thead><tr><th>المعرف</th><th>الاسم الكامل</th><th>المسمى الوظيفي</th><th>الراتب المقطوع</th><th>أجر الساعة</th><th>الإجراء</th></tr></thead>
+<tbody id="tb-emp"></tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="time" class="page-section">
+<div class="data-panel">
+<div class="data-panel-header">
+<div class="data-panel-title">سجل الدوام والعمل الإضافي</div>
+</div>
+<div class="custom-table-container">
+<table class="custom-table">
+<thead><tr><th>الموظف</th><th>ساعات نظامية</th><th>ساعات إضافية (x1.5)</th><th>إجمالي الأرباح</th><th>توثيق حضور</th></tr></thead>
+<tbody id="tb-tim"></tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="finance" class="page-section">
+<div class="data-panel">
+<div class="data-panel-header">
+<div class="data-panel-title">القيود المالية وتصفية الحسابات</div>
+</div>
+<div class="custom-table-container">
+<table class="custom-table">
+<thead><tr><th>الموظف</th><th>إجمالي الاستحقاق</th><th>المصروف نقداً</th><th>الرصيد المتبقي</th><th>إنشاء سند</th></tr></thead>
+<tbody id="tb-fin"></tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="archive" class="page-section">
+<div class="data-panel">
+<div class="data-panel-header">
+<div class="data-panel-title">سجلات الصناديق المغلقة</div>
+</div>
+<div class="custom-table-container">
+<table class="custom-table">
+<thead><tr><th>رقم الصندوق</th><th>تاريخ الفتح</th><th>تاريخ الإغلاق</th><th>إجمالي القيود</th><th>المصروفات الكلية</th></tr></thead>
+<tbody id="tb-arc"></tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="report" class="page-section">
+<div class="data-panel">
+<div class="data-panel-header"><div class="data-panel-title">مركز توليد التقارير والفواتير</div></div>
+<div style="display:flex; gap:24px; margin-bottom:32px;">
+<div class="form-group" style="flex:1; margin:0;"><label>مصدر البيانات</label><select class="form-control" id="rp-box"></select></div>
+<div class="form-group" style="flex:1; margin:0;"><label>الكيان المستهدف</label><select class="form-control" id="rp-emp"></select></div>
+</div>
+<div class="report-grid">
+<div class="report-card selected" id="rc-a4" onclick="selRpt('a4')">
+<i class="fa-solid fa-table-list"></i>
+<h3>تقرير الإدارة (A4)</h3>
+<p>مستند شامل للمحاسبة الداخلية يعرض كافة القيود في جداول تفصيلية جاهزة للطباعة العريضة.</p>
+</div>
+<div class="report-card" id="rc-80" onclick="selRpt('80')">
+<i class="fa-solid fa-receipt"></i>
+<h3>فاتورة كاشير (80mm)</h3>
+<p>إيصال تصفية مصغر ومخصص للطباعة الحرارية المباشرة ليتم تسليمه يداً بيد للموظف.</p>
+</div>
+</div>
+<div class="checkbox-list" id="rp-opts">
+<label class="checkbox-item"><input type="checkbox" id="c-att" checked><span>سجل الساعات والدوام</span></label>
+<label class="checkbox-item"><input type="checkbox" id="c-adv" checked><span>قيود السلف المسحوبة</span></label>
+<label class="checkbox-item"><input type="checkbox" id="c-ded" checked><span>الخصومات والجزاءات</span></label>
+<label class="checkbox-item"><input type="checkbox" id="c-bon" checked><span>المكافآت والحوافز</span></label>
+<label class="checkbox-item"><input type="checkbox" id="c-pay" checked><span>الدفعات النقدية المسلمة</span></label>
+</div>
+<div style="display:flex; justify-content:center; margin-top:32px;">
+<button class="btn btn-primary" style="font-size:18px; padding:16px 48px;" onclick="genRpt()"><i class="fa-solid fa-file-invoice"></i> معاينة وتجهيز الطباعة</button>
+</div>
+<div id="area-a4" class="print-area-a4">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+<h2 style="color:#0f172a; font-weight:900;">معاينة المستند الإداري</h2>
+<button class="btn btn-success" onclick="prtA4()"><i class="fa-solid fa-print"></i> إرسال للطابعة</button>
+</div>
+<div id="out-a4" style="color:#0f172a;"></div>
+</div>
+<div id="area-80" class="print-area-80mm"></div>
+<div id="act-80" style="display:none; justify-content:center; margin-top:24px;">
+<button class="btn btn-warning" onclick="prt80()"><i class="fa-solid fa-print"></i> طباعة الإيصال الحراري</button>
+</div>
+</div>
+</div>
+<div id="secret" class="page-section">
+<div class="data-panel">
+<div class="data-panel-header">
+<div class="data-panel-title" style="color:var(--color-warning);">السجل الإداري المحظور</div>
+<button class="btn btn-warning" onclick="pNt()"><i class="fa-solid fa-plus"></i> إدراج تقييم</button>
+</div>
+<div class="custom-table-container">
+<table class="custom-table">
+<thead><tr><th>الموظف</th><th>تصنيف التقييم</th><th>النص الإداري</th><th>تاريخ الإدراج</th></tr></thead>
+<tbody id="tb-sec"></tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="settings" class="page-section">
+<div class="data-panel" style="max-width:600px;">
+<div class="data-panel-header"><div class="data-panel-title">تكوين النظام</div></div>
+<div class="form-group">
+<label>العملة الافتراضية</label>
+<input type="text" class="form-control" id="in-curr" placeholder="مثال: ريال، $، ل.س">
+</div>
+<button class="btn btn-success" onclick="svSet()"><i class="fa-solid fa-check"></i> حفظ التكوين</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="modal-wrapper" id="md-sec">
+<div class="modal-content" style="max-width:400px; text-align:center;">
+<div class="modal-header"><h2 style="color:var(--color-warning);"><i class="fa-solid fa-shield-halved"></i> جدار حماية</h2></div>
+<div class="form-group" style="text-align:left;">
+<label style="text-align:center;">شفرة المرور الإدارية</label>
+<input type="password" class="form-control" id="in-pw" style="text-align:center; font-size:24px; letter-spacing:8px;">
+</div>
+<div class="modal-footer" style="justify-content:center;">
+<button class="btn btn-outline" onclick="clsMd('md-sec')">تراجع</button>
+<button class="btn btn-warning" onclick="vrPw()">فك التشفير</button>
+</div>
+</div>
+</div>
+<div class="modal-wrapper" id="md-emp">
+<div class="modal-content">
+<div class="modal-header"><h2 style="color:var(--color-primary);"><i class="fa-solid fa-id-card"></i> بطاقة تعريف وظيفية</h2></div>
+<input type="hidden" id="em-id">
+<div class="form-group"><label>الاسم الرباعي</label><input type="text" class="form-control" id="em-nm"></div>
+<div class="form-group"><label>المسمى الوظيفي</label><input type="text" class="form-control" id="em-rl"></div>
+<div class="form-group"><label>الراتب المقطوع المستحق</label><input type="number" class="form-control" id="em-bs"></div>
+<div class="form-group"><label>قيمة الساعة النظامية</label><input type="number" class="form-control" id="em-hr"></div>
+<div class="modal-footer">
+<button class="btn btn-outline" onclick="clsMd('md-emp')">إلغاء الأمر</button>
+<button class="btn btn-primary" onclick="svEm()">اعتماد البطاقة</button>
+</div>
+</div>
+</div>
+<div class="modal-wrapper" id="md-tim">
+<div class="modal-content">
+<div class="modal-header"><h2 style="color:var(--color-secondary);"><i class="fa-solid fa-clock-rotate-left"></i> إثبات حضور</h2></div>
+<input type="hidden" id="tm-id">
+<div class="form-group"><label>ساعات نظامية</label><input type="number" step="0.5" class="form-control" id="tm-nm" value="0"></div>
+<div class="form-group"><label>ساعات إضافية (مضاعفة x1.5)</label><input type="number" step="0.5" class="form-control" id="tm-ov" value="0"></div>
+<div class="modal-footer">
+<button class="btn btn-outline" onclick="clsMd('md-tim')">إلغاء الأمر</button>
+<button class="btn btn-secondary" onclick="svTm()">تسجيل الساعات</button>
+</div>
+</div>
+</div>
+<div class="modal-wrapper" id="md-fin">
+<div class="modal-content">
+<div class="modal-header"><h2 style="color:var(--color-success);"><i class="fa-solid fa-file-invoice-dollar"></i> تحرير سند قيد</h2></div>
+<input type="hidden" id="fn-id">
+<div class="form-group">
+<label>تبويب القيد</label>
+<select class="form-control" id="fn-ty">
+<option value="pay">تسليم دفعة نقدية (من الراتب)</option>
+<option value="adv">سحب سلفة مسجلة (دين)</option>
+<option value="ded">تغريم وإيقاع جزاء (خصم)</option>
+<option value="bon">منح حافز نقدي (مكافأة)</option>
+</select>
+</div>
+<div class="form-group"><label>المبلغ</label><input type="number" class="form-control" id="fn-am"></div>
+<div class="form-group"><label>البيان التوضيحي</label><input type="text" class="form-control" id="fn-nt"></div>
+<div class="modal-footer">
+<button class="btn btn-outline" onclick="clsMd('md-fin')">إلغاء الأمر</button>
+<button class="btn btn-success" onclick="svFn()">ترحيل القيد</button>
+</div>
+</div>
+</div>
+<div class="modal-wrapper" id="md-not">
+<div class="modal-content">
+<div class="modal-header"><h2 style="color:var(--color-warning);"><i class="fa-solid fa-clipboard-check"></i> تدوين ملاحظة رقابية</h2></div>
+<div class="form-group"><label>الموظف المستهدف</label><select class="form-control" id="nt-id"></select></div>
+<div class="form-group">
+<label>درجة التقييم</label>
+<select class="form-control" id="nt-ty">
+<option value="pos">تقييم ممتاز (إيجابي)</option>
+<option value="neg">إنذار خطي (سلبي)</option>
+<option value="neu">ملاحظة سير عمل (عادي)</option>
+</select>
+</div>
+<div class="form-group"><label>نص التدوينة</label><input type="text" class="form-control" id="nt-tx"></div>
+<div class="modal-footer">
+<button class="btn btn-outline" onclick="clsMd('md-not')">إلغاء الأمر</button>
+<button class="btn btn-warning" onclick="svNt()">إدراج في الملف</button>
+</div>
+</div>
+</div>
+<iframe id="prt-a4" style="display:none;"></iframe>
+<iframe id="prt-80" style="display:none;"></iframe>
+<script>
+let dt={emp:[],cbx:{id:Date.now(),sd:new Date().toISOString(),tr:[],at:[],py:[],nt:[]},arc:[],st:{cr:'$'}};
+let isSc=false;let rpTy='a4';let mCh=null;
+document.addEventListener('DOMContentLoaded',async()=>{
+if(window.require){
+const{ipcRenderer}=require('electron');
+let r=await ipcRenderer.invoke('get-db');
+if(r){dt.emp=r.employees||[];dt.cbx=r.currentBox||dt.cbx;dt.arc=r.closedBoxes||[];dt.st=r.settings||dt.st;}
+}else{
+let ls=localStorage.getItem('db');if(ls){let r=JSON.parse(ls);dt.emp=r.employees||[];dt.cbx=r.currentBox||dt.cbx;dt.arc=r.closedBoxes||[];dt.st=r.settings||dt.st;}
+}
+document.getElementById('in-curr').value=dt.st.cr;
+rfU();
+});
+async function flD(){
+if(window.require){const{ipcRenderer}=require('electron');await ipcRenderer.invoke('save-db',{employees:dt.emp,currentBox:dt.cbx,closedBoxes:dt.arc,settings:dt.st});}
+else{localStorage.setItem('db',JSON.stringify({employees:dt.emp,currentBox:dt.cbx,closedBoxes:dt.arc,settings:dt.st}));}
+rfU();
+}
+function navig(el,id){
+if(!isSc&&id==='secret'){document.getElementById('in-pw').value='';opnMd('md-sec');return;}
+document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+el.classList.add('active');
+let t=document.getElementById('tb-title');
+t.innerHTML=el.innerHTML;
+document.querySelectorAll('.page-section').forEach(s=>{s.classList.remove('is-visible');});
+document.getElementById(id).classList.add('is-visible');
+if(id==='report')flR();
+}
+function triggerSec(){navig(document.querySelector('.secret-tab'),'secret');}
+function vrPw(){if(document.getElementById('in-pw').value==='عبد'){isSc=true;clsMd('md-sec');navig(document.querySelector('.secret-tab'),'secret');bdN();}else{alert('شفرة غير صالحة');}}
+function opnMd(id){const m=document.getElementById(id);m.style.display='flex';setTimeout(()=>m.classList.add('is-open'),10);}
+function clsMd(id){const m=document.getElementById(id);m.classList.remove('is-open');setTimeout(()=>m.style.display='none',300);}
+function fD(d){let dt=new Date(d);return dt.toLocaleDateString('ar-EG')+' '+dt.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});}
+function fM(v){return Number(v).toLocaleString('en-US')+' '+dt.st.cr;}
+function eng(b,ei){
+let e=dt.emp.find(x=>x.id===ei);if(!e)return null;
+let nh=0,oh=0,ad=0,dd=0,bn=0,pd=0;
+b.at.filter(a=>a.empId===ei).forEach(a=>{nh+=Number(a.normal);oh+=Number(a.over);});
+b.tr.filter(t=>t.empId===ei).forEach(t=>{if(t.type==='adv')ad+=Number(t.amount);if(t.type==='ded')dd+=Number(t.amount);if(t.type==='bon')bn+=Number(t.amount);});
+b.py.filter(p=>p.empId===ei).forEach(p=>pd+=Number(p.amount));
+let bs=Number(e.baseSalary);let hr=Number(e.hourlyRate);let er=(nh*hr)+(oh*hr*1.5);
+let nt=bs+er+bn-ad-dd;let rm=nt-pd;let pr=nt>0?Math.min((pd/nt)*100,100):0;
+return{bs,hr,nh,oh,er,ad,dd,bn,pd,nt,rm,pr};
+}
+function rfU(){
+document.getElementById('st-box-date').innerText=fD(dt.cbx.sd);
+let hE=document.getElementById('tb-emp'),hT=document.getElementById('tb-tim'),hF=document.getElementById('tb-fin');
+hE.innerHTML='';hT.innerHTML='';hF.innerHTML='';
+let dS=0,dD=0,dP=0,dO=0;let cL=[],cD=[];
+dt.emp.forEach(e=>{
+let f=eng(dt.cbx,e.id);
+dS+=f.rm;dD+=(f.ad+f.dd);dP+=f.pd;dO+=f.oh;
+cL.push(e.name);cD.push(f.nt);
+hE.innerHTML+=`<tr><td>#${e.id}</td><td>${e.name}</td><td><span class="badge badge-neutral">${e.role}</span></td><td>${fM(f.bs)}</td><td>${fM(f.hr)}</td><td><button class="btn btn-warning" onclick="pEm(${e.id})"><i class="fa-solid fa-pen"></i></button></td></tr>`;
+hT.innerHTML+=`<tr><td>${e.name}</td><td><span class="badge badge-neutral">${f.nh}</span></td><td><span class="badge badge-primary">${f.oh}</span></td><td><span style="color:var(--color-success);font-weight:900;">${fM(f.er)}</span></td><td><button class="btn btn-secondary" onclick="pTm(${e.id})"><i class="fa-solid fa-stopwatch"></i> توثيق</button></td></tr>`;
+hF.innerHTML+=`<tr><td>${e.name}</td><td>${fM(f.nt)}</td><td><span style="color:var(--color-success)">${fM(f.pd)}</span></td><td><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;color:var(--text-muted);"><span>متبقي</span><span style="color:var(--text-bright);">${fM(f.rm)}</span></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${f.pr}%"></div></div></td><td><button class="btn btn-success" onclick="pFn(${e.id})"><i class="fa-solid fa-file-signature"></i> إنشاء</button></td></tr>`;
+});
+document.getElementById('dh-sal').innerText=fM(dS);document.getElementById('dh-ded').innerText=fM(dD);
+document.getElementById('dh-pay').innerText=fM(dP);document.getElementById('dh-ovr').innerText=dO;
+if(mCh)mCh.destroy();
+mCh=new Chart(document.getElementById('main-chart').getContext('2d'),{type:'line',data:{labels:cL,datasets:[{label:'الصافي',data:cD,borderColor:'#4f46e5',backgroundColor:'rgba(79,70,229,0.2)',borderWidth:4,fill:true,tension:0.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#1e293b'}},x:{grid:{display:false}}}}});
+let hA=document.getElementById('tb-arc');hA.innerHTML='';
+dt.arc.slice().reverse().forEach(b=>{
+let px=b.py.reduce((s,x)=>s+Number(x.amount),0);
+hA.innerHTML+=`<tr><td>#${b.id}</td><td>${fD(b.sd)}</td><td>${fD(b.endDate)}</td><td><span class="badge badge-primary">${b.tr.length+b.at.length+b.py.length}</span></td><td><span style="color:var(--color-success)">${fM(px)}</span></td></tr>`;
+});
+if(isSc)bdN();
+}
+function pEm(id){const e=dt.emp.find(x=>x.id===id);document.getElementById('em-id').value=e.id;document.getElementById('em-nm').value=e.name;document.getElementById('em-rl').value=e.role;document.getElementById('em-bs').value=e.baseSalary;document.getElementById('em-hr').value=e.hourlyRate;opnMd('md-emp');}
+function svEm(){const id=document.getElementById('em-id').value;const d={id:id?Number(id):Date.now(),name:document.getElementById('em-nm').value,role:document.getElementById('em-rl').value,baseSalary:document.getElementById('em-bs').value||0,hourlyRate:document.getElementById('em-hr').value||0};if(id)dt.emp[dt.emp.findIndex(e=>e.id==id)]=d;else dt.emp.push(d);clsMd('md-emp');flD();}
+function pTm(id){document.getElementById('tm-id').value=id;document.getElementById('tm-nm').value='';document.getElementById('tm-ov').value='';opnMd('md-tim');}
+function svTm(){dt.cbx.at.push({id:Date.now(),empId:Number(document.getElementById('tm-id').value),normal:document.getElementById('tm-nm').value||0,over:document.getElementById('tm-ov').value||0,date:new Date().toISOString()});clsMd('md-tim');flD();}
+function pFn(id){document.getElementById('fn-id').value=id;document.getElementById('fn-am').value='';document.getElementById('fn-nt').value='';opnMd('md-fin');}
+function svFn(){let ei=Number(document.getElementById('fn-id').value),ty=document.getElementById('fn-ty').value,am=document.getElementById('fn-am').value,nt=document.getElementById('fn-nt').value;if(!am)return;if(ty==='pay')dt.cbx.py.push({id:Date.now(),empId:ei,amount:am,note:nt,date:new Date().toISOString()});else dt.cbx.tr.push({id:Date.now(),empId:ei,type:ty,amount:am,note:nt,date:new Date().toISOString()});clsMd('md-fin');flD();}
+function pNt(){document.getElementById('nt-id').innerHTML=dt.emp.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');document.getElementById('nt-tx').value='';opnMd('md-not');}
+function svNt(){dt.cbx.nt.push({id:Date.now(),empId:Number(document.getElementById('nt-id').value),type:document.getElementById('nt-ty').value,text:document.getElementById('nt-tx').value,date:new Date().toISOString()});clsMd('md-not');flD();}
+function bdN(){let hS=document.getElementById('tb-sec');hS.innerHTML='';dt.cbx.nt.forEach(n=>{let e=dt.emp.find(x=>x.id===n.empId);let cls=n.type==='pos'?'badge-success':(n.type==='neg'?'badge-danger':'badge-neutral');let lbl=n.type==='pos'?'إيجابي':(n.type==='neg'?'سلبي':'عادي');hS.innerHTML+=`<tr><td>${e?e.name:'?'}</td><td><span class="badge ${cls}">${lbl}</span></td><td>${n.text}</td><td>${fD(n.date)}</td></tr>`;});}
+function cnfClose(){if(confirm('تأكيد التصفية المالية الكاملة وإقفال الصندوق؟')){dt.cbx.endDate=new Date().toISOString();dt.arc.push(JSON.parse(JSON.stringify(dt.cbx)));dt.cbx={id:Date.now(),sd:new Date().toISOString(),tr:[],at:[],py:[],nt:[]};flD();}}
+function flR(){let bx=document.getElementById('rp-box'),ep=document.getElementById('rp-emp');bx.innerHTML=`<option value="cur">الصندوق الحالي النشط</option>`;dt.arc.slice().reverse().forEach(b=>{bx.innerHTML+=`<option value="${b.id}">صندوق مؤرشف #${b.id} (${fD(b.sd)})</option>`;});ep.innerHTML=`<option value="all">كل الكوادر</option>`;dt.emp.forEach(e=>{ep.innerHTML+=`<option value="${e.id}">${e.name}</option>`;});}
+function selRpt(t){rpTy=t;document.getElementById('rc-a4').classList.remove('selected');document.getElementById('rc-80').classList.remove('selected');document.getElementById('rc-'+t).classList.add('selected');}
+function genRpt(){
+let bid=document.getElementById('rp-box').value,eid=document.getElementById('rp-emp').value;
+let b=bid==='cur'?dt.cbx:dt.arc.find(x=>x.id==bid);if(!b)return;
+let es=eid==='all'?dt.emp:dt.emp.filter(x=>x.id==eid);
+let cAt=document.getElementById('c-att').checked,cAd=document.getElementById('c-adv').checked,cDd=document.getElementById('c-ded').checked,cBn=document.getElementById('c-bon').checked,cPy=document.getElementById('c-pay').checked;
+if(rpTy==='a4'){
+let h=`<div style="text-align:center;margin-bottom:30px;"><h1 style="margin:0;color:#0f172a;font-size:28px;">تقرير إداري مجمع</h1><p style="margin:5px 0 0 0;color:#64748b;">${bid==='cur'?'الصندوق الحالي المفتوح':'سجل الصندوق رقم '+b.id}</p></div>`;
+let tB=0,tE=0,tA=0,tD=0,tP=0,tR=0;
+h+=`<table style="width:100%;border-collapse:collapse;margin-bottom:30px;font-size:14px;"><thead><tr><th style="background:#f1f5f9;padding:12px;border:1px solid #cbd5e1;text-align:right;">الموظف</th><th style="background:#f1f5f9;padding:12px;border:1px solid #cbd5e1;text-align:right;">الأساسي</th>`;
+if(cAt)h+=`<th style="background:#f1f5f9;padding:12px;border:1px solid #cbd5e1;text-align:right;">الساعات والأرباح</th>`;
+if(cAd)h+=`<th style="background:#f1f5f9;padding:12px;border:1px solid #cbd5e1;text-align:right;">السلف</th>`;
+if(cDd)h+=`<th style="background:#f1f5f9;padding:12px;border:1px solid #cbd5e1;text-align:right;">الخصومات</th>`;
+if(cBn)h+=`<th style="background:#f1f5f9;padding:12px;border:1px solid #cbd5e1;text-align:right;">المكافآت</th>`;
+if(cPy)h+=`<th style="background:#f1f5f9;padding:12px;border:1px solid #cbd5e1;text-align:right;">المدفوع نقداً</th>`;
+h+=`<th style="background:#f1f5f9;padding:12px;border:1px solid #cbd5e1;text-align:right;">الصافي المتبقي</th></tr></thead><tbody>`;
+es.forEach(e=>{
+let f=eng(b,e.id);
+tB+=f.bs;tE+=f.er;tA+=f.ad;tD+=f.dd;tP+=f.pd;tR+=f.rm;
+h+=`<tr><td style="padding:12px;border:1px solid #cbd5e1;"><b>${e.name}</b><br><span style="font-size:11px;color:#64748b;">${e.role}</span></td><td style="padding:12px;border:1px solid #cbd5e1;">${fM(f.bs)}</td>`;
+if(cAt)h+=`<td style="padding:12px;border:1px solid #cbd5e1;">${f.nh}ع | ${f.oh}إ<br><b style="color:#059669">${fM(f.er)}</b></td>`;
+if(cAd)h+=`<td style="padding:12px;border:1px solid #cbd5e1;color:#e11d48;">${fM(f.ad)}</td>`;
+if(cDd)h+=`<td style="padding:12px;border:1px solid #cbd5e1;color:#e11d48;">${fM(f.dd)}</td>`;
+if(cBn)h+=`<td style="padding:12px;border:1px solid #cbd5e1;color:#059669;">${fM(f.bn)}</td>`;
+if(cPy)h+=`<td style="padding:12px;border:1px solid #cbd5e1;color:#0284c7;">${fM(f.pd)}</td>`;
+h+=`<td style="padding:12px;border:1px solid #cbd5e1;font-weight:900;font-size:16px;">${fM(f.rm)}</td></tr>`;
+});
+h+=`</tbody></table>`;
+h=`<div style="display:flex;gap:15px;margin-bottom:30px;"><div style="flex:1;background:#f8fafc;padding:15px;border-left:4px solid #4f46e5;border-radius:6px;border:1px solid #e2e8f0;">مجموع الرواتب والأرباح<br><b style="font-size:22px;color:#0f172a;">${fM(tB+tE)}</b></div><div style="flex:1;background:#f8fafc;padding:15px;border-left:4px solid #e11d48;border-radius:6px;border:1px solid #e2e8f0;">إجمالي السحب والخصم<br><b style="font-size:22px;color:#e11d48;">${fM(tA+tD)}</b></div><div style="flex:1;background:#f8fafc;padding:15px;border-left:4px solid #059669;border-radius:6px;border:1px solid #e2e8f0;">إجمالي المسلم نقداً<br><b style="font-size:22px;color:#059669;">${fM(tP)}</b></div><div style="flex:1;background:#f8fafc;padding:15px;border-left:4px solid #f59e0b;border-radius:6px;border:1px solid #e2e8f0;">إجمالي الذمم المتبقية<br><b style="font-size:22px;color:#f59e0b;">${fM(tR)}</b></div></div>`+h;
+document.getElementById('out-a4').innerHTML=h;
+document.getElementById('area-a4').style.display='block';document.getElementById('area-80').style.display='none';document.getElementById('act-80').style.display='none';
+}else{
+if(eid==='all'){alert('طباعة 80mm تتطلب تحديد موظف واحد فقط لإنشاء فاتورته.');return;}
+let e=es[0];let f=eng(b,e.id);
+let h=`<div style="text-align:center;border-bottom:2px dashed #000;padding-bottom:12px;margin-bottom:15px;"><h2 style="margin:0;font-size:22px;font-weight:900;">فاتورة موظف</h2><p style="margin:4px 0 0 0;font-size:12px;">إيصال استلام وتصفية قيود</p><p style="margin:4px 0 0 0;font-size:12px;">مطبوع في: ${new Date().toLocaleDateString('ar-EG')}</p></div>`;
+h+=`<div style="margin-bottom:15px;font-size:14px;line-height:1.6;"><b>الاسم:</b> ${e.name}<br><b>المنصب:</b> ${e.role}</div>`;
+h+=`<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:15px;">`;
+h+=`<tr><td style="padding:6px 0;border-bottom:1px solid #ddd;">راتب مقطوع</td><td style="text-align:left;border-bottom:1px solid #ddd;">${fM(f.bs)}</td></tr>`;
+if(cAt)h+=`<tr><td style="padding:6px 0;border-bottom:1px solid #ddd;">أرباح الساعات</td><td style="text-align:left;border-bottom:1px solid #ddd;">${fM(f.er)}</td></tr>`;
+if(cBn)h+=`<tr><td style="padding:6px 0;border-bottom:1px solid #ddd;">حوافز ومكافآت</td><td style="text-align:left;border-bottom:1px solid #ddd;">+ ${fM(f.bn)}</td></tr>`;
+if(cAd)h+=`<tr><td style="padding:6px 0;border-bottom:1px solid #ddd;">سلف مسحوبة</td><td style="text-align:left;border-bottom:1px solid #ddd;">- ${fM(f.ad)}</td></tr>`;
+if(cDd)h+=`<tr><td style="padding:6px 0;border-bottom:1px solid #ddd;">خصومات وجزاءات</td><td style="text-align:left;border-bottom:1px solid #ddd;">- ${fM(f.dd)}</td></tr>`;
+h+=`</table>`;
+h+=`<table style="width:100%;border-collapse:collapse;font-size:15px;font-weight:900;margin-bottom:15px;border-top:2px solid #000;border-bottom:2px solid #000;"><tr><td style="padding:8px 0;">صافي الاستحقاق</td><td style="text-align:left;">${fM(f.nt)}</td></tr>`;
+if(cPy)h+=`<tr><td style="padding:8px 0;">المسلم نقداً</td><td style="text-align:left;">${fM(f.pd)}</td></tr>`;
+h+=`</table>`;
+h+=`<div style="text-align:center;font-size:18px;font-weight:900;margin-top:15px;padding:10px;border:2px dashed #000;">الرصيد المتبقي: ${fM(f.rm)}</div>`;
+h+=`<div style="text-align:center;font-size:12px;margin-top:30px;color:#333;">توقيع الاستلام: ........................</div>`;
+document.getElementById('area-80').innerHTML=h;
+document.getElementById('area-a4').style.display='none';document.getElementById('area-80').style.display='block';document.getElementById('act-80').style.display='flex';
+}
+}
+function prtA4(){
+let c=document.getElementById('out-a4').innerHTML;let f=document.getElementById('prt-a4').contentWindow.document;
+f.open();f.write(`<html><head><style>@page{size:A4;margin:15mm;}body{font-family:'Segoe UI',sans-serif;direction:rtl;margin:0;color:#000;}</style></head><body>${c}</body></html>`);f.close();
+setTimeout(()=>{document.getElementById('prt-a4').contentWindow.focus();document.getElementById('prt-a4').contentWindow.print();},250);
+}
+function prt80(){
+let c=document.getElementById('area-80').innerHTML;let f=document.getElementById('prt-80').contentWindow.document;
+f.open();f.write(`<html><head><style>@page{margin:0;}body{font-family:'Segoe UI',sans-serif;direction:rtl;margin:0;padding:2mm;width:72mm;color:#000;font-weight:bold;}</style></head><body>${c}</body></html>`);f.close();
+setTimeout(()=>{document.getElementById('prt-80').contentWindow.focus();document.getElementById('prt-80').contentWindow.print();},250);
+}
+function svSet(){dt.st.cr=document.getElementById('in-curr').value||'$';flD();}
+</script>
 </body>
 </html>
