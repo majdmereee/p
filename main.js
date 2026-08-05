@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const { autoUpdater } = require('electron-updater'); // استدعاء مكتبة التحديث التلقائي
+const { autoUpdater } = require('electron-updater');
 
 const dbPath = path.join(app.getPath('userData'), 'daily_cash_db.json');
 let mainWindow;
@@ -24,10 +24,9 @@ function createWindow() {
 app.whenReady().then(() => {
     createWindow();
 
-    // فحص التحديثات بصمت في الخلفية
-    // إذا لم يكن هناك إنترنت، سيتجاهل الأمر بصمت ويعمل التطبيق أوفلاين
-    autoUpdater.checkForUpdatesAndNotify().catch(err => {
-        console.log("يعمل التطبيق في وضع الأوفلاين أو لا توجد تحديثات.");
+    // فحص التحديثات من مستودع majdmereee/p في الخلفية
+    autoUpdater.checkForUpdatesAndNotify().catch(() => {
+        console.log("التطبيق يعمل في وضع الأوفلاين.");
     });
 });
 
@@ -54,5 +53,7 @@ ipcMain.handle('save-db', (event, data) => {
     try {
         fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
         return true;
-    } catch (error) { return false; }
+    } catch (error) { 
+        return false; 
+    }
 });
