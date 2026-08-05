@@ -1,59 +1,62 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const { autoUpdater } = require('electron-updater');
 
-const dbPath = path.join(app.getPath('userData'), 'daily_cash_db.json');
-let mainWindow;
+const dataFilePath = path.join(app.getPath('userData'), 'restaurant_gamified_db.json');
 
-function createWindow() {
-    mainWindow = new BrowserWindow({
-        width: 1280,
-        height: 800,
-        title: "الإدارة المالية برو",
-        autoHideMenuBar: true,
-        webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false
-        }
-    });
+// الهيكل الجديد لدعم الصناديق الفترية
+const defaultDB = {
+  employees: [],
+  currentBox: {
+    id: Date.now(),
+    startDate: new Date().toISOString(),
+    transactions: [],
+    attendance: [],
+    payments: [],
+    notes: []
+  },
+  closedBoxes: [],
+  settings: { currency: '$' }
+};
 
-    mainWindow.loadFile('index.html');
+function initDataFile() {
+  if (!fs.existsSync(dataFilePath)) {
+    fs.writeFileSync(dataFilePath, JSON.stringify(defaultDB, null, 2));
+  } else {
+    // الترقية التلقائية لقاعدة البيانات القديمة إن وجدت
+    let raw = fs.readFileSync(dataFilePath, 'utf8');
+    let parsed = JSON.parse(raw);
+    if(!parsed.currentBox) {
+        parsed.currentBox = {
+            id: Date.now(), startDate: new Date().toISOString(),
+            transactions: parsed.transactions || [], attendance: parsed.attendance || [],
+            payments: [], notes: []
+        };
+        delete parsed.transactions; delete parsed.attendance;
+        if(!parsed.closedBoxes) parsed.closedBoxes = [];
+        fs.writeFileSync(dataFilePath, JSON.stringify(parsed, null, 2));
+    }
+  }
 }
 
-app.whenReady().then(() => {
-    createWindow();
+function createWindow () {
+  const mainWindow = new BrowserWindow({
+    width: 1400, height: 850, minWidth: 1024, minHeight: 700,
+    autoHideMenuBar: true,
+    webPreferences: { nodeIntegration: true, contextIsolation: false }
+  });
+  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+}
 
-    // فحص التحديثات من مستودع majdmereee/p في الخلفية
-    autoUpdater.checkForUpdatesAndNotify().catch(() => {
-        console.log("التطبيق يعمل في وضع الأوفلاين.");
-    });
+app.whenReady().then(() => { initDataFile(); createWindow(); });
+app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
+
+ipcMain.handle('get-db', async () => {
+  try { return JSON.parse(fs.readFileSync(dataFilePath, 'utf8')); } 
+  catch (error) { return defaultDB; }
 });
 
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-        app.quit();
-    }
-});
-
-// ==========================================
-// إدارة قاعدة البيانات (قراءة وحفظ)
-// ==========================================
-ipcMain.handle('get-db', () => {
-    try {
-        if (fs.existsSync(dbPath)) {
-            const data = fs.readFileSync(dbPath, 'utf8');
-            return JSON.parse(data);
-        }
-    } catch (error) {}
-    return null; 
-});
-
-ipcMain.handle('save-db', (event, data) => {
-    try {
-        fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
-        return true;
-    } catch (error) { 
-        return false; 
-    }
+ipcMain.handle('save-db', async (event, dbData) => {
+  try { fs.writeFileSync(dataFilePath, JSON.stringify(dbData, null, 2)); return { success: true }; } 
+  catch (error) { return { success: false, error: error.message }; }
 });
