@@ -1,9 +1,12 @@
-name: Build Windows EXE
+name: Build and Publish Windows App
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
+
+permissions:
+  contents: write # إعطاء الصلاحية لإنشاء تحديثات ورفعها
 
 jobs:
   build:
@@ -16,16 +19,18 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 18
 
       - name: Install Dependencies
         run: npm install
 
-      - name: Build EXE
+      - name: Build and Publish Electron App
         run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # السماح برفع التحديثات لحسابك
 
       - name: Upload EXE Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Windows-App-EXE
+          name: Daily-Cash-App
           path: dist/*.exe
