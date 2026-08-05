@@ -1,42 +1,20 @@
 {
-  "name": "daily-cash-pro",
+  "name": "restaurant-pro-manager",
   "version": "1.0.0",
-  "description": "نظام الإدارة المالية برو",
+  "description": "النظام الإداري والمالي المتقدم للمطاعم",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --win -p always"
+    "build": "electron-builder --win --publish never"
   },
   "build": {
-    "appId": "com.restaurant.dailycash",
-    "productName": "الإدارة المالية برو",
-    "directories": {
-      "output": "dist"
-    },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "majdmereee",
-        "repo": "p"
-      }
-    ],
+    "appId": "com.restaurant.pro",
     "win": {
       "target": "nsis"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "uninstallDisplayName": "الإدارة المالية برو"
     }
   },
-  "author": "Majd",
-  "license": "MIT",
-  "dependencies": {
-    "electron-updater": "^6.1.8"
-  },
   "devDependencies": {
-    "electron": "28.2.0",
-    "electron-builder": "24.9.1"
+    "electron": "^29.0.0",
+    "electron-builder": "^24.12.0"
   }
 }
